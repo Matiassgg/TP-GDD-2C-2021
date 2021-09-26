@@ -6,7 +6,7 @@ GO
 -- CREACION DE ESQUEMA
 ---------------------------------------------------
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = "[N&M'S]")
-  DROP SCHEMA LAWE
+  DROP SCHEMA "[N&M'S]"
 GO
 
 CREATE SCHEMA "[N&M'S]"
@@ -62,7 +62,7 @@ IF OBJECT_ID("[N&M'S].Material_x_Tarea", 'U') IS NOT NULL
 IF OBJECT_ID("[N&M'S].Tarea_x_Orden", 'U') IS NOT NULL
     DROP TABLE [N&M'S].Tarea_x_Orden
 
-
+-- Nose si habria que hacerlo onda asi tambien : CREATE TABLE `[N&M'S].Ciudad` (asi con los demas)
 CREATE TABLE `Ciudad` (
   `ciudad_id` int,
   `nombre` nvarchar(510),
