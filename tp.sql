@@ -1,73 +1,84 @@
-
 USE [GD2C2021];
 GO
 
+BEGIN TRANSACTION
 --------------------------------------------------- 
 -- CREACION DE ESQUEMA
 ---------------------------------------------------
-IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = "[N&M'S]")
-  DROP SCHEMA "[N&M'S]"
+IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'N&M''S')
+  DROP SCHEMA [N&M'S]
 GO
 
-CREATE SCHEMA "[N&M'S]"
+CREATE SCHEMA "N&M'S"
+GO
 
+DECLARE @id_test BIT = 1 -- esto despues se volara
 --------------------------------------------------- 
 -- CREACION DE TABLAS
 ---------------------------------------------------
-IF OBJECT_ID("[N&M'S].Ciudad", 'U') IS NOT NULL
+IF OBJECT_ID('Ciudad', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Ciudad
 
-IF OBJECT_ID("[N&M'S].Recorrido", 'U') IS NOT NULL
+IF OBJECT_ID('Recorrido', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Recorrido
 
-IF OBJECT_ID("[N&M'S].Taller", 'U') IS NOT NULL
+IF OBJECT_ID('Taller', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Taller
 
-IF OBJECT_ID("[N&M'S].Modelo", 'U') IS NOT NULL
+IF OBJECT_ID('Modelo', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Modelo
 
-IF OBJECT_ID("[N&M'S].Marca", 'U') IS NOT NULL
+IF OBJECT_ID('Marca', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Marca
 
-IF OBJECT_ID("[N&M'S].Camion", 'U') IS NOT NULL
+IF OBJECT_ID('Camion', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Camion
 
-IF OBJECT_ID("[N&M'S].Chofer", 'U') IS NOT NULL
+IF OBJECT_ID('Chofer', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Chofer
 
-IF OBJECT_ID("[N&M'S].Viaje", 'U') IS NOT NULL
+IF OBJECT_ID('Viaje', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Viaje
 
-IF OBJECT_ID("[N&M'S].Paquete", 'U') IS NOT NULL
+IF OBJECT_ID('Paquete', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Paquete
 
-IF OBJECT_ID("[N&M'S].Paquete_x_Viaje", 'U') IS NOT NULL
+IF OBJECT_ID('Paquete_x_Viaje', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Paquete_x_Viaje
     
-IF OBJECT_ID("[N&M'S].Orden_de_Trabajo", 'U') IS NOT NULL
+IF OBJECT_ID('Orden_de_Trabajo', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Orden_de_Trabajo
 
-IF OBJECT_ID("[N&M'S].Tarea", 'U') IS NOT NULL
+IF OBJECT_ID('Tarea', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Tarea
 
-IF OBJECT_ID("[N&M'S].Mecanico", 'U') IS NOT NULL
+IF OBJECT_ID('Mecanico', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Mecanico
 
-IF OBJECT_ID("[N&M'S].Material", 'U') IS NOT NULL
+IF OBJECT_ID('Material', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Material
 
-IF OBJECT_ID("[N&M'S].Material_x_Tarea", 'U') IS NOT NULL
+IF OBJECT_ID('Material_x_Tarea', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Material_x_Tarea
 
-IF OBJECT_ID("[N&M'S].Tarea_x_Orden", 'U') IS NOT NULL
+IF OBJECT_ID('Tarea_x_Orden', 'U') IS NOT NULL
     DROP TABLE [N&M'S].Tarea_x_Orden
 
--- Nose si habria que hacerlo onda asi tambien : CREATE TABLE `[N&M'S].Ciudad` (asi con los demas)
-CREATE TABLE `Ciudad` (
-  `ciudad_id` int,
-  `nombre` nvarchar(510),
-  PRIMARY KEY (`ciudad_id`)
+CREATE TABLE [N&M'S].Ciudad (
+  ciudad_id int,
+  nombre nvarchar(510),
+  PRIMARY KEY (ciudad_id)
 );
+
+IF @id_test = 1
+	PRINT 'Funca todo, pero falta'
+	ROLLBACK TRANSACTION
+	RETURN
+	
+COMMIT
+PRINT 'Fin con exito'
+
+-- Funca hasta aca, falta
 
 
 CREATE TABLE `Recorrido` (
@@ -152,12 +163,9 @@ CREATE TABLE `Viaje` (
   `fecha_fin` datetime2,
   `consumo_combustible` decimal,
   PRIMARY KEY (`nro_viaje`),
-    FOREIGN KEY ( `camion_id`) 
-  REFERENCES `Camion`(`camion_id`),
-    FOREIGN KEY ( `chofer_id`) 
-  REFERENCES `Chofer`(`chofer_id`),
-      FOREIGN KEY ( `recorrido_id`) 
-  REFERENCES `Recorrido`(`recorrido_id`)
+  FOREIGN KEY ( `camion_id`) REFERENCES `Camion`(`camion_id`),
+  FOREIGN KEY ( `chofer_id`) REFERENCES `Chofer`(`chofer_id`),
+  FOREIGN KEY ( `recorrido_id`) REFERENCES `Recorrido`(`recorrido_id`)
 );
 
 
@@ -178,10 +186,8 @@ CREATE TABLE `Paquete_x_Viaje` (
   `paquete_id` int,
   `cantidad_paquete` int,
   PRIMARY KEY (`nro_viaje`, `paquete_id`),
-  FOREIGN KEY ( `nro_viaje`) 
-  REFERENCES `Viaje`(`nro_viaje`),
-  FOREIGN KEY ( `paquete_id`) 
-  REFERENCES `Paquete`(`paquete_id`)
+  FOREIGN KEY ( `nro_viaje`) REFERENCES `Viaje`(`nro_viaje`),
+  FOREIGN KEY ( `paquete_id`) REFERENCES `Paquete`(`paquete_id`)
 );
 
 
@@ -192,10 +198,8 @@ CREATE TABLE `Orden_de_Trabajo` (
   `fecha_generada` datetime2,
   `estado` nvarchar(510),
   PRIMARY KEY (`nro_orden`),
-    FOREIGN KEY ( `camion_id`) 
-  REFERENCES `Camion`(`camion_id`),
-    FOREIGN KEY ( `taller_id`) 
-  REFERENCES `Taller`(`taller_id`),
+  FOREIGN KEY ( `camion_id`) REFERENCES `Camion`(`camion_id`),
+  FOREIGN KEY ( `taller_id`) REFERENCES `Taller`(`taller_id`),
 );
 
 
@@ -233,10 +237,8 @@ CREATE TABLE `Tarea_x_Orden` (
   `fecha_fin_real` datetime2,
   `tiempo_ejecucion` int,
   PRIMARY KEY (`nro_orden`),
-    FOREIGN KEY ( `tarea_id`) 
-  REFERENCES `Tarea`(`tarea_id`),
-    FOREIGN KEY ( `mecanico_id`) 
-  REFERENCES `Mecanico`(`mecanico_id`)
+  FOREIGN KEY ( `tarea_id`) REFERENCES `Tarea`(`tarea_id`),
+  FOREIGN KEY ( `mecanico_id`) REFERENCES `Mecanico`(`mecanico_id`)
 );
 
 
@@ -253,10 +255,8 @@ CREATE TABLE `Material_x_Tarea` (
   `material_id` int,
   `cantidad` int,
   PRIMARY KEY (`tarea_id`, `material_id`),
-      FOREIGN KEY ( `tarea_id`) 
-  REFERENCES `Tarea`(`tarea_id`),
-    FOREIGN KEY ( `material_id`) 
-  REFERENCES `Material`(`material_id`)
+  FOREIGN KEY ( `tarea_id`) REFERENCES `Tarea`(`tarea_id`),
+  FOREIGN KEY ( `material_id`) REFERENCES `Material`(`material_id`)
 );
 
 ---------------------------------------------------
@@ -264,8 +264,8 @@ CREATE TABLE `Material_x_Tarea` (
 ---------------------------------------------------
 
 -- Algo asi habria que hacerlo por cada sp
-IF OBJECT_ID("[N&M'S].spXXX") IS NOT NULL
-    DROP PROCEDURE [N&M'S].Ciudad
+IF OBJECT_ID('[N&M''S].spXXX') IS NOT NULL
+    DROP PROCEDURE [N&M'S].spXXX
 
 -- CREAR SP's para migrar los datos a cada tabla
 
