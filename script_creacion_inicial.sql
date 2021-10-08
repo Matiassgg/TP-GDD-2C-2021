@@ -1,12 +1,17 @@
 USE [GD2C2021];
 GO
 
-BEGIN TRANSACTION
+PRINT 'Realizando limpieza en base de datos [GD2C2021]' + CHAR(13)
+GO
 --------------------------------------------------- 
 -- CHEQUEO DE STORED PROCEDURES
 ---------------------------------------------------
-IF OBJECT_ID('[N&M''S].sp_XXX', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_XXX;
+IF OBJECT_ID('[N&M''S].sp_migrar_ciudad', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_ciudad;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_recorrido', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_recorrido;
 GO
 --------------------------------------------------- 
 -- CHEQUEO DE VISTAS
@@ -17,6 +22,10 @@ GO
 --------------------------------------------------- 
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
+IF OBJECT_ID('[N&M''S].fn_obtener_id_ciudad', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_ciudad;
+GO
+
 IF OBJECT_ID('[N&M''S].fn_xxx', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_xxx;
 GO
@@ -79,25 +88,26 @@ IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Tarea_x_Orden;
 GO
 
+BEGIN TRANSACTION
 --------------------------------------------------- 
 -- CHEQUEO Y CREACION DE ESQUEMA
 ---------------------------------------------------
+PRINT 'Creando ESQUEMA [N&M''S]' + CHAR(13)
+GO
+
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'N&M''S')
   DROP SCHEMA [N&M'S];
 GO
 
 CREATE SCHEMA "N&M'S";
 GO
---------------------------------------------------
--- Esto despues se volara
---------------------------------------------------
-DECLARE @id_test BIT = 1;
-DECLARE @ErrorMessage NVARCHAR(MAX);  
-DECLARE @ErrorSeverity INT;  
-DECLARE @ErrorState INT;  
+
 --------------------------------------------------- 
 -- CREACION DE TABLAS
 ---------------------------------------------------
+PRINT 'Creando TABLAS para la migracion de datos en base al DER planteado' + CHAR(13)
+GO
+
 CREATE TABLE [N&M'S].Ciudad (
   ciudad_id INT PRIMARY KEY IDENTITY(1,1),
   nombre NVARCHAR(510) NOT NULL
@@ -110,7 +120,7 @@ CREATE TABLE [N&M'S].Recorrido (
   km_recorridos INT NOT NULL,
   precio DECIMAL(18,2) NOT NULL
 );
-
+/*
 CREATE TABLE [N&M'S].Taller (
   taller_id INT PRIMARY KEY IDENTITY(1,1),
   ciudad_id INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
@@ -166,21 +176,6 @@ CREATE TABLE [N&M'S].Viaje (
   consumo_combustible DECIMAL(18,2) NOT NULL
 );
 
-BEGIN
-	IF @id_test = 1
-		BEGIN
-			PRINT 'Funca todo, pero falta'
-			ROLLBACK TRANSACTION
-		END
-	ELSE
-		BEGIN
-			PRINT 'Fin con exito'	
-			COMMIT TRANSACTION
-		END
-END
-
--- Funca hasta aca, falta
-/*
 CREATE TABLE `Paquete` (
   `paquete_id` int,
   `descripcion` nvarchar(510),
@@ -262,32 +257,109 @@ CREATE TABLE `Material_x_Tarea` (
   FOREIGN KEY ( `tarea_id`) REFERENCES `Tarea`(`tarea_id`),
   FOREIGN KEY ( `material_id`) REFERENCES `Material`(`material_id`)
 );
+*/
+GO
 
+/*
 ---------------------------------------------------
 -- CREACION DE INDICES
 ---------------------------------------------------
+PRINT 'Creando INDICES' + CHAR(13)
+GO
 
 -- Nose si son necesarios todavia, pero dejo el molde
 CREATE INDEX idx_xxx ON [N&M'S].xxx (..., ...); 
-
+*/
 ---------------------------------------------------
 -- CREACION DE FUNCIONES
 ---------------------------------------------------
+PRINT 'Creando FUNCIONES para la migracion de datos' + CHAR(13)
+GO
 
--- Nose si son necesarias todavia, pero dejo el molde
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un nombre de ciudad, me devuelve el ciudad_id de la tabla 
+	@parameters: Nombre de la ciudad
+	@return: El id de la ciudad que encuentra (encuentra si o si ya que es una funcion para facilitar la migracion de datos, no es de busqueda a nivel data analytics)
+*/
 
-CREATE FUNCTION [N&M'S].fn_xxx(@id_banana INT) RETURNS INT AS
+CREATE FUNCTION [N&M'S].fn_obtener_id_ciudad(@ciudad_nombre NVARCHAR(510)) RETURNS INT AS
 	BEGIN
-		RETURN @id_banana;
+		DECLARE @ciudad_id INT;
+		SELECT @ciudad_id = ciudad_id FROM [N&M'S].Ciudad WHERE nombre = @ciudad_nombre
+		RETURN @ciudad_id;
 	END
 GO
 
+/*
+
+@autors: Grupo 18 - N&M'S
+@desc: 
+@parameters: banana_id
+@return: 
+
+CREATE FUNCTION [N&M'S].fn_xxx(@banana_id INT) RETURNS INT AS
+	BEGIN
+		RETURN @banana_id;
+	END
+GO
+*/
 ---------------------------------------------------
 -- CREACION DE STORED PROCEDURES
 ---------------------------------------------------
+PRINT 'Creando STORED PROCEDURES para la migracion de datos' + CHAR(13)
+GO
 
--- Crear SP's para migrar los datos a cada tabla
-CREATE PROCEDURE [N&M'S].sp_xxx AS
+CREATE PROCEDURE [N&M'S].sp_migrar_ciudad AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Ciudad (nombre)
+				SELECT DISTINCT RECORRIDO_CIUDAD_ORIGEN FROM gd_esquema.Maestra WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL
+					UNION 
+				SELECT DISTINCT RECORRIDO_CIUDAD_DESTINO FROM gd_esquema.Maestra WHERE RECORRIDO_CIUDAD_DESTINO IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_recorrido AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Recorrido (id_ciudad_origen, id_ciudad_destino, km_recorridos, precio)
+				SELECT DISTINCT 
+					[N&M'S].fn_obtener_id_ciudad(RECORRIDO_CIUDAD_ORIGEN), 
+					[N&M'S].fn_obtener_id_ciudad(RECORRIDO_CIUDAD_DESTINO), 
+					RECORRIDO_KM, 
+					RECORRIDO_PRECIO 
+					FROM gd_esquema.maestra 
+					WHERE CONCAT(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO, RECORRIDO_KM, RECORRIDO_PRECIO) <> ''
+					-- Se puede hacer asi tambien
+					-- WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL AND RECORRIDO_KM IS NOT NULL AND RECORRIDO_PRECIO IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+/*
+CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
 	BEGIN TRY
 		BEGIN TRANSACTION
 
@@ -308,11 +380,15 @@ CREATE PROCEDURE [N&M'S].sp_xxx AS
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
-
+*/
 ---------------------------------------------------
 -- EJECUCIÓN DE STORED PROCEDURES
 ---------------------------------------------------
+PRINT 'Se llevara a cabo la ejecucion de los STORED PROCEDURES' + CHAR(13)
+GO
 
+EXEC [N&M'S].sp_migrar_ciudad
+EXEC [N&M'S].sp_migrar_recorrido
 -- EXEC [N&M'S].sp_migrar_xxxxx
 -- EXEC [N&M'S].sp_migrar_xxxxx
 -- EXEC [N&M'S].sp_migrar_xxxxx
@@ -322,12 +398,12 @@ GO
 -- EXEC [N&M'S].sp_migrar_xxxxx
 -- EXEC [N&M'S].sp_migrar_xxxxx
 -- EXEC [N&M'S].sp_migrar_xxxxx
--- EXEC [N&M'S].sp_migrar_xxxxx
--- EXEC [N&M'S].sp_migrar_xxxxx
-
+/*
 ---------------------------------------------------
 -- CREACION DE VISTAS
 ---------------------------------------------------
+PRINT 'Creando VISTAS para la migracion de datos' + CHAR(13)
+GO
 
 -- Son 8
 
@@ -387,3 +463,22 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 */
+
+SELECT * FROM [N&M'S].Ciudad;
+SELECT * FROM [N&M'S].Recorrido;
+
+BEGIN
+	DECLARE @id_test BIT = 1;
+	IF @id_test = 1
+		BEGIN
+			PRINT 'Corre todo, pero no se carga nada (schema, tablas, sp, etc...)'
+			ROLLBACK TRANSACTION
+		END
+	ELSE
+		BEGIN
+			PRINT 'Fin con exito'
+			COMMIT TRANSACTION
+		END
+END
+GO
+
