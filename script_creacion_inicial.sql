@@ -360,8 +360,8 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dado un nombre de marcae, modelo y patente, me devuelve el camion_id de la tabla Camion que corresponde a ese modelo-marca-patente
-	@parameters: Nombre de marca, nombre del modelo, patente
+	@desc: Funcion que dada una patente, me devuelve el camion_id de la tabla Camion que corresponde a esa patente
+	@parameters: Patente del camion
 	@return: El id del camion que encuentre
 */
 CREATE FUNCTION [N&M'S].fn_obtener_id_camion(@patente NVARCHAR(510)) RETURNS INT AS
@@ -374,7 +374,7 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dado un numero de legajo, me devuelve el chofer_id de la tabla Chofer que corresponde a ese legado (se asume que cada chofer tiene su propio legajo UNICO)
+	@desc: Funcion que dado un numero de legajo, me devuelve el chofer_id de la tabla Chofer que corresponde a ese legajo (se asume que cada chofer tiene su propio legajo UNICO)
 	@parameters: Legajo del chofer
 	@return: El id del chofer que encuentre
 */
@@ -388,7 +388,7 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Obtiene el id recorrido de la tabla recorrdio para una combinacion de origen-destino existente en la tabla Recorrido
+	@desc: Obtiene el id recorrido de la tabla recorrido para una combinacion de origen-destino existente
 	@parameters: La ciudad de origen y destino
 	@return: El id recorrido que corresponde a ese origen y destino
 */
@@ -400,7 +400,10 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_recorrido(@ciudad_origen NVARCHAR(510), @c
 
 		SELECT @recorrido_id = recorrido_id 
 		FROM [N&M'S].Recorrido 
-		WHERE id_ciudad_origen = @id_recorrido_ciudad_origen AND id_ciudad_destino = @id_recorrido_ciudad_destino AND @ciudad_origen IS NOT NULL AND @ciudad_destino IS NOT NULL
+		WHERE id_ciudad_origen = @id_recorrido_ciudad_origen AND 
+			id_ciudad_destino = @id_recorrido_ciudad_destino AND 
+			@ciudad_origen IS NOT NULL AND 
+			@ciudad_destino IS NOT NULL
 
 		RETURN @recorrido_id
 	END
@@ -640,7 +643,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
 GO
 */
 ---------------------------------------------------
--- EJECUCIÓN DE STORED PROCEDURES
+-- EJECUCIÃ“N DE STORED PROCEDURES
 ---------------------------------------------------
 PRINT 'Se llevara a cabo la ejecucion de los STORED PROCEDURES' + CHAR(13)
 GO
@@ -669,39 +672,39 @@ GO
 -- Son 8
 
 ---------------------------------------------------
-1. Máximo tiempo fuera de servicio de cada camión por cuatrimestre
-Se entiende por fuera de servicio cuando el camión está en el taller (tiene
+1. MÃ¡ximo tiempo fuera de servicio de cada camiÃ³n por cuatrimestre
+Se entiende por fuera de servicio cuando el camiÃ³n estÃ¡ en el taller (tiene
 una OT) y no se encuentra disponible para un viaje.
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 ---------------------------------------------------
 
-2. Costo total de mantenimiento por camión, por taller, por cuatrimestre.
+2. Costo total de mantenimiento por camiÃ³n, por taller, por cuatrimestre.
 Se entiende por costo de mantenimiento el costo de materiales + el costo
 de mano de obra insumido en cada tarea (correctivas y preventivas)
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
-3. Desvío promedio de cada tarea x taller
+3. DesvÃ­o promedio de cada tarea x taller
 
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
-4. Las 5 tareas que más se realizan por modelo de camión
+4. Las 5 tareas que mÃ¡s se realizan por modelo de camiÃ³n
 
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
-5. Los 10 materiales más utilizados por taller
+5. Los 10 materiales mÃ¡s utilizados por taller
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
-6. Facturación total por recorrido por cuatrimestre (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
+6. FacturaciÃ³n total por recorrido por cuatrimestre (En funciÃ³n de la cantidad y tipo de paquetes que transporta el camiÃ³n y el recorrido)
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
@@ -711,9 +714,9 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
-8. Ganancia por camión (Ingresos – Costo de viaje – Costo de mantenimiento)
-	- Ingresos: en función de la cantidad y tipo de paquetes que
-	transporta el camión y el recorrido
+8. Ganancia por camiÃ³n (Ingresos Â– Costo de viaje Â– Costo de mantenimiento)
+	- Ingresos: en funciÃ³n de la cantidad y tipo de paquetes que
+	transporta el camiÃ³n y el recorrido
 
 	- Costo de viaje: costo del chofer + el costo de combustible.
 	Tomar precio por lt de combustible $100
