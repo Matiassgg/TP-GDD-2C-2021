@@ -22,16 +22,20 @@ IF OBJECT_ID('[N&M''S].sp_migrar_modelo', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_modelo;
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_chofer', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_chofer;
-GO
-
 IF OBJECT_ID('[N&M''S].sp_migrar_marca', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_marca;
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_camion', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_camion;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_chofer', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_chofer;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_viaje', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_viaje;
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
@@ -67,6 +71,10 @@ IF OBJECT_ID('[N&M''S].fn_obtener_id_chofer', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_obtener_id_chofer;
 GO
 
+IF OBJECT_ID('[N&M''S].fn_obtener_id_recorrido', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_recorrido;
+GO
+
 IF OBJECT_ID('[N&M''S].fn_xxx', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_xxx;
 GO
@@ -74,6 +82,11 @@ GO
 -- CHEQUEO DE INDICES
 ---------------------------------------------------
 -- xxx seria la tabla donde le "pega" ese indice
+
+------------------
+-- QUIZA haya que crear un indice para la tabla de viajes, ya que tiene varios registros ...
+------------------
+
 IF OBJECT_ID('[N&M''S].xxx.idx_xxx') IS NOT NULL
   DROP INDEX [N&M'S].xxx.idx_xxx;
 GO
@@ -133,11 +146,11 @@ BEGIN TRANSACTION
 --------------------------------------------------- 
 -- CHEQUEO Y CREACION DE ESQUEMA
 ---------------------------------------------------
-PRINT 'Creando ESQUEMA [N&M''S]' + CHAR(13)
-GO
-
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'N&M''S')
   DROP SCHEMA [N&M'S];
+GO
+
+PRINT 'Creando ESQUEMA [N&M''S]' + CHAR(13)
 GO
 
 CREATE SCHEMA "N&M'S";
@@ -189,9 +202,9 @@ CREATE TABLE [N&M'S].Camion (
   marca_id INT NOT NULL REFERENCES [N&M'S].Marca(marca_id),
   modelo_id INT NOT NULL REFERENCES [N&M'S].Modelo(modelo_id),
   patente NVARCHAR(510) NOT NULL,
-  nro_chasis NVARCHAR(510) NOT NULL,
-  nro_motor NVARCHAR(510) NOT NULL,
-  fecha_alta DATETIME2 NOT NULL
+  nro_chasis NVARCHAR(510),
+  nro_motor NVARCHAR(510),
+  fecha_alta DATETIME2
 );
 
 CREATE TABLE [N&M'S].Chofer (
@@ -202,7 +215,7 @@ CREATE TABLE [N&M'S].Chofer (
   direccion NVARCHAR(510),
   telefono INT,
   mail NVARCHAR(510),
-  fecha_nacimiento DATETIME2 NOT NULL,
+  fecha_nacimiento DATETIME2,
   legajo INT NOT NULL,
   costo_x_hora INT NOT NULL
 );
@@ -212,9 +225,9 @@ CREATE TABLE [N&M'S].Viaje (
   camion_id INT NOT NULL REFERENCES [N&M'S].Camion(camion_id),
   chofer_id INT NOT NULL REFERENCES [N&M'S].Chofer(chofer_id),
   recorrido_id INT NOT NULL REFERENCES [N&M'S].Recorrido(recorrido_id),
-  fecha_inicio DATETIME2 NOT NULL,
-  fecha_fin DATETIME2 NOT NULL,
-  consumo_combustible DECIMAL(18,2) NOT NULL
+  fecha_inicio DATETIME2,
+  fecha_fin DATETIME2,
+  consumo_combustible DECIMAL(18,2)
 );
 
 CREATE TABLE [N&M'S].Paquete (
@@ -305,11 +318,10 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dado un nombre de ciudad, me devuelve el ciudad_id de la tabla 
+	@desc: Funcion que dado un nombre de ciudad, me devuelve el ciudad_id de la tabla Ciudad
 	@parameters: Nombre de la ciudad
-	@return: El id de la ciudad que encuentra (encuentra si o si ya que es una funcion para facilitar la migracion de datos, no es de busqueda a nivel data analytics)
+	@return: El id de la ciudad que encuentre
 */
-
 CREATE FUNCTION [N&M'S].fn_obtener_id_ciudad(@ciudad_nombre NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @ciudad_id INT;
@@ -318,6 +330,12 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_ciudad(@ciudad_nombre NVARCHAR(510)) RETUR
 	END
 GO
 
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un nombre de marca, me devuelve el marca_id de la tabla Marca
+	@parameters: Nombre de la marca
+	@return: El id de la marca que encuentre
+*/
 CREATE FUNCTION [N&M'S].fn_obtener_id_marca(@descripcion_marca NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @marca_id INT
@@ -326,6 +344,12 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_marca(@descripcion_marca NVARCHAR(510)) RE
 	END
 GO
 
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un nombre de modelo, me devuelve el modelo_id de la tabla Modelo
+	@parameters: Nombre del modelo
+	@return: El id del modelo que encuentre
+*/
 CREATE FUNCTION [N&M'S].fn_obtener_id_modelo(@descripcion_modelo NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @modelo_id INT
@@ -334,33 +358,55 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_modelo(@descripcion_modelo NVARCHAR(510)) 
 	END
 GO
 
-CREATE FUNCTION [N&M'S].fn_obtener_id_camion(@descripcion_marca NVARCHAR(510), @descripcion_modelo NVARCHAR(510)) RETURNS INT AS
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un nombre de marcae, modelo y patente, me devuelve el camion_id de la tabla Camion que corresponde a ese modelo-marca-patente
+	@parameters: Nombre de marca, nombre del modelo, patente
+	@return: El id del camion que encuentre
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_camion(@patente NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @camion_id INT
-		DECLARE @marca_id INT = [N&M'S].fn_obtener_id_marca(@descripcion_marca)
-		DECLARE @modelo_id INT = [N&M'S].fn_obtener_id_modelo(@descripcion_modelo)
-		SELECT @camion_id = camion_id FROM [N&M'S].Camion WHERE marca_id = @marca_id and modelo_id = @modelo_id
+		SELECT @camion_id = camion_id FROM [N&M'S].Camion WHERE patente = @patente
 		RETURN @camion_id
 	END
 GO
 
-CREATE FUNCTION [N&M'S].fn_obtener_id_chofer(@nombre NVARCHAR(510)) RETURNS INT AS
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un numero de legajo, me devuelve el chofer_id de la tabla Chofer que corresponde a ese legado (se asume que cada chofer tiene su propio legajo UNICO)
+	@parameters: Legajo del chofer
+	@return: El id del chofer que encuentre
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_chofer(@legajo NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @chofer_id INT
-		SELECT @chofer_id = chofer_id FROM [N&M'S].Chofer WHERE nombre = @nombre
+		SELECT @chofer_id = chofer_id FROM [N&M'S].Chofer WHERE legajo = @legajo
 		RETURN @chofer_id
 	END
 GO
+
 /*
-CREATE FUNCTION [N&M'S].fn_obtener_id_recorrido(@nombre NVARCHAR(510)) RETURNS INT AS
+	@autors: Grupo 18 - N&M'S
+	@desc: Obtiene el id recorrido de la tabla recorrdio para una combinacion de origen-destino existente en la tabla Recorrido
+	@parameters: La ciudad de origen y destino
+	@return: El id recorrido que corresponde a ese origen y destino
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_recorrido(@ciudad_origen NVARCHAR(510), @ciudad_destino NVARCHAR(510)) RETURNS INT AS
 	BEGIN
 		DECLARE @recorrido_id INT
-		DECLARE @id_recorrido_origen = [N&M'S].fn_obtener_id_ciudad
-		SELECT @chofer_id = chofer_id FROM [N&M'S].Chofer WHERE nombre = @nombre
-		RETURN @chofer_id
+		DECLARE @id_recorrido_ciudad_origen INT = [N&M'S].fn_obtener_id_ciudad(@ciudad_origen)
+		DECLARE @id_recorrido_ciudad_destino INT = [N&M'S].fn_obtener_id_ciudad(@ciudad_destino)
+
+		SELECT @recorrido_id = recorrido_id 
+		FROM [N&M'S].Recorrido 
+		WHERE id_ciudad_origen = @id_recorrido_ciudad_origen AND id_ciudad_destino = @id_recorrido_ciudad_destino AND @ciudad_origen IS NOT NULL AND @ciudad_destino IS NOT NULL
+
+		RETURN @recorrido_id
 	END
-*/
 GO
+
+
 /*
 
 @autors: Grupo 18 - N&M'S
@@ -409,15 +455,13 @@ CREATE PROCEDURE [N&M'S].sp_migrar_recorrido AS
 	BEGIN TRY
 		BEGIN TRANSACTION
 			INSERT INTO [N&M'S].Recorrido (id_ciudad_origen, id_ciudad_destino, km_recorridos, precio)
-				SELECT DISTINCT 
+				SELECT DISTINCT
 					[N&M'S].fn_obtener_id_ciudad(RECORRIDO_CIUDAD_ORIGEN), 
-					[N&M'S].fn_obtener_id_ciudad(RECORRIDO_CIUDAD_DESTINO), 
+					[N&M'S].fn_obtener_id_ciudad(RECORRIDO_CIUDAD_DESTINO),
 					RECORRIDO_KM, 
 					RECORRIDO_PRECIO 
 					FROM gd_esquema.maestra 
-					WHERE CONCAT(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO, RECORRIDO_KM, RECORRIDO_PRECIO) <> ''
-					-- Se puede hacer asi tambien
-					-- WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL AND RECORRIDO_KM IS NOT NULL AND RECORRIDO_PRECIO IS NOT NULL
+					WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -433,17 +477,18 @@ CREATE PROCEDURE [N&M'S].sp_migrar_taller AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Taller(ciudad_id,nombre,direccion,telefono,mail)
+			INSERT INTO [N&M'S].Taller(ciudad_id, nombre, direccion, telefono, mail)
 			SELECT DISTINCT
 				[N&M'S].fn_obtener_id_ciudad(TALLER_CIUDAD),
-				TALLER_NOMBRE,TALLER_DIRECCION,TALLER_TELEFONO,TALLER_MAIL 
-				from gd_esquema.Maestra
-				WHERE CONCAT(TALLER_CIUDAD,TALLER_NOMBRE, TALLER_DIRECCION, TALLER_TELEFONO, TALLER_MAIL) <> ''
-				
+				TALLER_NOMBRE,
+				TALLER_DIRECCION,
+				TALLER_TELEFONO,
+				TALLER_MAIL 
+				FROM gd_esquema.Maestra
+				WHERE TALLER_CIUDAD IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState); 
 	END CATCH
@@ -456,16 +501,13 @@ CREATE PROCEDURE [N&M'S].sp_migrar_modelo AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Modelo(descripcion,velocidad_max,capacidad_tanque,capacidad_carga)
-			SELECT DISTINCT
-			MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA 
-			from gd_esquema.Maestra
-			WHERE CONCAT(MODELO_CAMION,MODELO_VELOCIDAD_MAX, MODELO_CAPACIDAD_TANQUE, MODELO_CAPACIDAD_CARGA) <> ''
-
+			INSERT INTO [N&M'S].Modelo(descripcion, velocidad_max, capacidad_tanque, capacidad_carga)
+			SELECT DISTINCT MODELO_CAMION, MODELO_VELOCIDAD_MAX, MODELO_CAPACIDAD_TANQUE, MODELO_CAPACIDAD_CARGA  
+			FROM gd_esquema.Maestra
+			WHERE MODELO_CAMION IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
@@ -479,15 +521,10 @@ CREATE PROCEDURE [N&M'S].sp_migrar_marca AS
 	BEGIN TRY
 		BEGIN TRANSACTION
 			INSERT INTO [N&M'S].Marca(descripcion)
-			SELECT DISTINCT
-			MARCA_CAMION_MARCA 
-			from gd_esquema.Maestra
-			WHERE MARCA_CAMION_MARCA IS NOT NULL
-
+			SELECT DISTINCT MARCA_CAMION_MARCA FROM gd_esquema.Maestra WHERE MARCA_CAMION_MARCA IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
@@ -500,19 +537,19 @@ CREATE PROCEDURE [N&M'S].sp_migrar_camion AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			
-			INSERT INTO [N&M'S].Camion(marca_id,modelo_id,patente,nro_chasis,nro_motor,fecha_alta)
+			INSERT INTO [N&M'S].Camion(marca_id, modelo_id, patente, nro_chasis, nro_motor, fecha_alta)
 			SELECT DISTINCT
-			[N&M'S].fn_obtener_id_marca(MARCA_CAMION_MARCA),
-			[N&M'S].fn_obtener_id_modelo(MODELO_CAMION),
-			CAMION_PATENTE,CAMION_NRO_CHASIS,CAMION_NRO_MOTOR,CAMION_FECHA_ALTA 
-			from gd_esquema.Maestra
-			WHERE CONCAT(MARCA_CAMION_MARCA,MODELO_CAMION, CAMION_PATENTE, CAMION_NRO_CHASIS, CAMION_NRO_MOTOR, CAMION_FECHA_ALTA) <> ''
-
+				[N&M'S].fn_obtener_id_marca(MARCA_CAMION_MARCA),
+				[N&M'S].fn_obtener_id_modelo(MODELO_CAMION),
+				CAMION_PATENTE,
+				CAMION_NRO_CHASIS,
+				CAMION_NRO_MOTOR,
+				CAMION_FECHA_ALTA 
+			FROM gd_esquema.Maestra
+			WHERE MARCA_CAMION_MARCA IS NOT NULL AND MODELO_CAMION IS NOT NULL AND CAMION_PATENTE IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
@@ -525,21 +562,18 @@ CREATE PROCEDURE [N&M'S].sp_migrar_chofer AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Chofer(nombre,apellido,dni,direccion,telefono,mail,fecha_nacimiento,legajo,costo_x_hora)
-			SELECT DISTINCT
-			CHOFER_NOMBRE,CHOFER_APELLIDO,CHOFER_DNI,CHOFER_DIRECCION,CHOFER_TELEFONO,CHOFER_MAIL,CHOFER_FECHA_NAC,CHOFER_NRO_LEGAJO,CHOFER_COSTO_HORA 
-			from gd_esquema.Maestra
-			WHERE CONCAT(CHOFER_NOMBRE,CHOFER_APELLIDO,CHOFER_DNI,CHOFER_DIRECCION,CHOFER_TELEFONO,CHOFER_MAIL,CHOFER_FECHA_NAC,CHOFER_NRO_LEGAJO,CHOFER_COSTO_HORA) <> ''
-
+			INSERT INTO [N&M'S].Chofer(nombre, apellido, dni, direccion, telefono, mail, fecha_nacimiento, legajo, costo_x_hora)
+			SELECT DISTINCT CHOFER_NOMBRE, CHOFER_APELLIDO, CHOFER_DNI, CHOFER_DIRECCION, CHOFER_TELEFONO, CHOFER_MAIL, CHOFER_FECHA_NAC, CHOFER_NRO_LEGAJO, CHOFER_COSTO_HORA 
+			FROM gd_esquema.Maestra
+			WHERE CHOFER_DNI IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
-/*
+
 CREATE PROCEDURE [N&M'S].sp_migrar_viaje AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -547,23 +581,24 @@ CREATE PROCEDURE [N&M'S].sp_migrar_viaje AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-		INSERT INTO [N&M'S].Viaje(camion_id,chofer_id,recorrido_id,fecha_inicio,fecha_fin,consumo_combustible)
+		INSERT INTO [N&M'S].Viaje(camion_id, chofer_id, recorrido_id, fecha_inicio, fecha_fin, consumo_combustible)
 		SELECT DISTINCT
-		[N&M'S].fn_obtener_id_camion(MARCA_CAMION_MARCA,MODELO_CAMION),
-		[N&M'S].fn_obtener_id_chofer(CHOFER_NOMBRE),
-		 
-		from gd_esquema.Maestra
-		
-
+			[N&M'S].fn_obtener_id_camion(CAMION_PATENTE),
+			[N&M'S].fn_obtener_id_chofer(CHOFER_NRO_LEGAJO),
+			[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO),
+			VIAJE_FECHA_INICIO, VIAJE_FECHA_FIN, VIAJE_CONSUMO_COMBUSTIBLE
+		FROM gd_esquema.Maestra
+		WHERE CAMION_PATENTE IS NOT NULL AND 
+			CHOFER_NRO_LEGAJO IS NOT NULL AND 
+			RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND 
+			RECORRIDO_CIUDAD_DESTINO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
-*/
 
 CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -572,19 +607,18 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Paquete(descripcion,precio,peso_max,alto_max,ancho_max,largo_max)
-			SELECT DISTINCT
-			PAQUETE_DESCRIPCION,PAQUETE_PRECIO,PAQUETE_PESO_MAX,PAQUETE_ALTO_MAX,PAQUETE_ANCHO_MAX,PAQUETE_LARGO_MAX
-			from gd_esquema.Maestra
-			WHERE CONCAT(PAQUETE_DESCRIPCION,PAQUETE_PRECIO,PAQUETE_PESO_MAX,PAQUETE_ALTO_MAX,PAQUETE_ANCHO_MAX,PAQUETE_LARGO_MAX) <>''
+			INSERT INTO [N&M'S].Paquete(descripcion, precio,peso_max,alto_max, ancho_max, largo_max)
+			SELECT DISTINCT PAQUETE_DESCRIPCION, PAQUETE_PRECIO, PAQUETE_PESO_MAX, PAQUETE_ALTO_MAX, PAQUETE_ANCHO_MAX, PAQUETE_LARGO_MAX
+			FROM gd_esquema.Maestra
+			WHERE PAQUETE_DESCRIPCION IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
+
 /*
 CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -618,10 +652,13 @@ EXEC [N&M'S].sp_migrar_modelo
 EXEC [N&M'S].sp_migrar_marca
 EXEC [N&M'S].sp_migrar_camion
 EXEC [N&M'S].sp_migrar_chofer
--- EXEC [N&M'S].sp_migrar_viaje
+EXEC [N&M'S].sp_migrar_viaje
 EXEC [N&M'S].sp_migrar_paquete
 -- EXEC [N&M'S].sp_migrar_xxxxx
 -- EXEC [N&M'S].sp_migrar_xxxxx
+-- EXEC [N&M'S].sp_migrar_xxxxx
+-- EXEC [N&M'S].sp_migrar_xxxxx
+
 /*
 ---------------------------------------------------
 -- CREACION DE VISTAS
@@ -688,14 +725,24 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 */
 
+/*
 SELECT * FROM [N&M'S].Ciudad;
 SELECT * FROM [N&M'S].Recorrido;
 SELECT * FROM [N&M'S].Taller;
 SELECT * FROM [N&M'S].Modelo;
 SELECT * FROM [N&M'S].Marca;
+SELECT * FROM [N&M'S].Viaje;
 SELECT * FROM [N&M'S].Camion;
 SELECT * FROM [N&M'S].Chofer;
 SELECT * FROM [N&M'S].Paquete;
+
+SELECT DISTINCT
+	RECORRIDO_CIUDAD_ORIGEN, 
+	RECORRIDO_CIUDAD_DESTINO, 
+	[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO) 
+	FROM gd_esquema.Maestra
+	WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL
+*/
 
 BEGIN
 	DECLARE @id_test BIT = 1;
