@@ -286,12 +286,15 @@ CREATE TABLE [N&M'S].Tarea_x_Orden (
   PRIMARY KEY (nro_orden, tarea_id),
 );
 
-CREATE TABLE Material (
-  tipo_id INT PRIMARY KEY IDENTITY(1,1),
+CREATE TABLE [N&M'S].Material (
+  material_id INT PRIMARY KEY IDENTITY(1,1),
+  cod NVARCHAR(100),
   descripcion NVARCHAR(510),
+  precio decimal
+  CONSTRAINT cod_unique UNIQUE (cod)
 );
 
-CREATE TABLE Material_x_Tarea (
+CREATE TABLE [N&M'S].Material_x_Tarea (
   tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
   material_id INT REFERENCES [N&M'S].Material(material_id),
   cantidad INT,
