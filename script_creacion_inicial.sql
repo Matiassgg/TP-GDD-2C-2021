@@ -38,8 +38,36 @@ IF OBJECT_ID('[N&M''S].sp_migrar_viaje', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_viaje;
 GO
 
+IF OBJECT_ID('[N&M''S].sp_migrar_paquete_x_viaje', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea;
+GO
+
 IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_paquete;
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_tarea_x_orden', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_tarea_x_orden;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_mecanico', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_mecanico;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_material', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_material;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_material_x_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_material_x_tarea;
 GO
 
 --------------------------------------------------- 
@@ -239,7 +267,7 @@ CREATE TABLE [N&M'S].Paquete (
   ancho_max DECIMAL(18,2),
   largo_max DECIMAL(18,2),
 );
-/*
+
 CREATE TABLE [N&M'S].Paquete_x_Viaje (
   nro_viaje INT REFERENCES [N&M'S].Viaje(nro_viaje),
   paquete_id INT REFERENCES [N&M'S].Paquete(paquete_id),
@@ -300,7 +328,6 @@ CREATE TABLE [N&M'S].Material_x_Tarea (
   cantidad INT,
   PRIMARY KEY (tarea_id, material_id),
 );
-*/
 GO
 
 /*
@@ -625,6 +652,151 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 	END CATCH
 GO
 
+CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Paquete(nro_viaje, paquete_id,cantidad_paquete)
+			SELECT DISTINCT PAQUETE_X_VIAJE_NRO_VIAJE,PAQUETE_X_VIAJE_PAQUETE_ID, PAQUETE_X_VIAJE_CANTIDAD_PAQUETE
+			FROM gd_esquema.Maestra
+			WHERE PAQUETE_X_VIAJE_PAQUETE_ID IS NOT NULL AND
+			PAQUETE_X_VIAJE_NRO_VIAJE IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+
+CREATE PROCEDURE [N&M'S].sp_migrar_order_de_trabajo AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Orden_de_Trabajo(nro_orden, camion_id,taller_id, fecha_generada, estado)
+			SELECT DISTINCT ORDEN_DE_TRABAJO_NRO_ORDEN,ORDEN_DE_TRABAJO_CAMION_ID, ORDEN_DE_TRABAJO_TALLER_ID, ORDEN_DE_TRABAJO_FECHA_GENERADA, ORDEN_DE_TRABAJO_ESTADO
+			FROM gd_esquema.Maestra
+			WHERE ORDEN_DE_TRABAJO_NRO_ORDEN IS NOT NULL AND
+			ORDEN_DE_TRABAJO_CAMION_ID IS NOT NULL AND 
+			ORDEN_DE_TRABAJO_TALLER_ID IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+
+CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Tarea(tarea_id, tipo_tarea,nombre, tiempo_estimado)
+			SELECT DISTINCT TAREA_TAREA_ID, TAREA_TIPO_TAREA, TAREA_NOMBRE, TAREA_TIEMPO_ESTIMADO
+			FROM gd_esquema.Maestra
+			WHERE TAREA_TAREA_ID IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Mecanico(mecanico_id,nombre, apellido,dni,direccion,telefono,mail,fecha_nacimiento,legajo,
+			costo_x_hora)
+			SELECT DISTINCT MECANICO_MECANICO_ID,MECANICO_NOMBRE,MECANICO_APELLIDO,MECANICO_DNI,MECANICO_DIRECCION,MECANICO_TELEFONO, MECANICO_MAIL, MECANICO_FECHA_NACIMIENTO, MECANICO_LEGAJO, MECANICO_COSTO_X_HORA
+			FROM gd_esquema.Maestra
+			WHERE MECANICO_MECANICO_ID IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Tarea_x_Orden(nro_orden,tarea_id, 
+			mecanico_id,fecha_inicio_planificada,fecha_inicio_real,fecha_fin_real,tiempo_ejecucion)
+			SELECT DISTINCT 
+			TAREA_X_ORDEN_NRO_ORDEN,TAREA_X_ORDEN_TAREA_ID,TAREA_X_ORDEN_MECANICO_ID,TAREA_X_ORDEN_FECHA_INICIO_PLANIFICADA,TAREA_X_ORDEN_FECHA_DE_INICIO_REAL,TAREA_X_ORDEN_FECHA-FIN_REAL, TAREA_X_ORDEN_TIEMPO_EJECUCION
+			FROM gd_esquema.Maestra
+			WHERE TAREA_X_ORDEN_NRO_ORDEN IS NOT NULL AND
+			TAREA_X_ORDEN_TAREA_ID IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_material AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Material(material_id,cod,descripcion,precio)
+			SELECT DISTINCT 
+			MATERIAL_MATERIAL_ID, MATERIAL_COD,MATERIAL_DESCRIPCION, MATERIAL_PRECIO
+			FROM gd_esquema.Maestra
+			WHERE MATERIAL_MATERIAL_ID IS NOT NULL AND
+			MATERIAL_COD IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
+	DECLARE @ErrorMessage NVARCHAR(MAX);  
+	DECLARE @ErrorSeverity INT;  
+	DECLARE @ErrorState INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO [N&M'S].Material_x_Tarea(material_id,tarea_id,cantidad)
+			SELECT DISTINCT 
+			MATERIAL_X_TAREA_MATERIAL_ID, MATERIAL_X_TAREA_TAREA_ID,MATERIAL_X_TAREA_CANTIDAD
+			FROM gd_esquema.Maestra
+			WHERE MATERIAL_X_TAREA_MATERIAL_ID IS NOT NULL AND
+			MATERIAL_X_TAREA_TAREA_ID IS NOT NULL
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+	END CATCH
+GO
 /*
 CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -660,10 +832,13 @@ EXEC [N&M'S].sp_migrar_camion
 EXEC [N&M'S].sp_migrar_chofer
 EXEC [N&M'S].sp_migrar_viaje
 EXEC [N&M'S].sp_migrar_paquete
--- EXEC [N&M'S].sp_migrar_xxxxx
--- EXEC [N&M'S].sp_migrar_xxxxx
--- EXEC [N&M'S].sp_migrar_xxxxx
--- EXEC [N&M'S].sp_migrar_xxxxx
+EXEC [N&M'S].sp_migrar_paquete_x_viaje
+EXEC [N&M'S].sp_migrar_orden_de_trabajo
+EXEC [N&M'S].sp_migrar_tarea
+EXEC [N&M'S].sp_migrar_mecanico
+EXEC [N&M'S].sp_migrar_tarea_x_orden
+EXEC [N&M'S].sp_migrar_material
+EXEC [N&M'S].sp_migrar_material_x_tarea
 
 /*
 ---------------------------------------------------
