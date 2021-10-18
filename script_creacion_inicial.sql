@@ -142,7 +142,6 @@ IF OBJECT_ID('[N&M''S].Paquete', 'U') IS NOT NULL
 
 IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Tarea_x_Orden;
-GO
 
 IF OBJECT_ID('[N&M''S].Orden_de_Trabajo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Orden_de_Trabajo;
@@ -162,20 +161,20 @@ IF OBJECT_ID('[N&M''S].Material', 'U') IS NOT NULL
 IF OBJECT_ID('[N&M''S].Taller', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Taller;
 
+IF OBJECT_ID('[N&M''S].Camion', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Camion;
+
 IF OBJECT_ID('[N&M''S].Modelo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Modelo;
 
 IF OBJECT_ID('[N&M''S].Marca', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Marca;
 
-IF OBJECT_ID('[N&M''S].Camion', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Camion;
+IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Ciudad;
 
 IF OBJECT_ID('[N&M''S].Recorrido', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Recorrido;
-
-IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Ciudad;
 
 IF OBJECT_ID('[N&M''S].Chofer', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Chofer;
@@ -449,9 +448,9 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: 
-	@parameters: banana_id
-	@return: 
+	@desc: Obtiene el numero de viaje de la tabla viaje en base a la combinacion camion-chofer-recorrido del viaje que se busca
+	@parameters: Id camion, Id chofer y Id recorrido
+	@return: El numero de viaje
 */
 CREATE FUNCTION [N&M'S].fn_obtener_id_viaje(@id_camion INT, @id_chofer INT, @id_recorrido INT) 
 	RETURNS INT AS
@@ -467,9 +466,9 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: 
-	@parameters: banana_id
-	@return: 
+	@desc: Obtener los datos del tipo de paquete en base a su descripcion (Pequeño, mediano o grande)
+	@parameters: La descripcion del paquete
+	@return: El id en base al tipo de paquete
 */
 CREATE FUNCTION [N&M'S].fn_obtener_id_paquete(@descripcion VARCHAR(510)) RETURNS INT AS
 	BEGIN
@@ -699,25 +698,21 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-
 			INSERT INTO [N&M'S].Paquete_x_Viaje(nro_viaje, paquete_id, cantidad_paquete)
 				SELECT DISTINCT
 					[N&M'S].fn_obtener_id_viaje( 
 						[N&M'S].fn_obtener_id_camion(CAMION_PATENTE),
 						[N&M'S].fn_obtener_id_chofer(CHOFER_NRO_LEGAJO), 
-						[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO)
-						),
+						[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO)),
 					[N&M'S].fn_obtener_id_paquete(PAQUETE_DESCRIPCION),
-					PAQUETE_CANTIDAD
+					SUM(PAQUETE_CANTIDAD)
 				FROM gd_esquema.Maestra
 				WHERE CHOFER_NRO_LEGAJO IS NOT NULL AND 
 					CAMION_PATENTE IS NOT NULL AND 
 					RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND 
 					RECORRIDO_CIUDAD_DESTINO IS NOT NULL AND
-					PAQUETE_DESCRIPCION IS NOT NULL AND
-					PAQUETE_CANTIDAD IS NOT NULL
-
-
+					PAQUETE_DESCRIPCION IS NOT NULL
+				GROUP BY CAMION_PATENTE, CHOFER_NRO_LEGAJO, RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO, PAQUETE_DESCRIPCION
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -726,8 +721,8 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 	END CATCH
 GO
 
-
 --Revisar a partir de aca las SP
+
 /*
 CREATE PROCEDURE [N&M'S].sp_migrar_order_de_trabajo AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -887,8 +882,6 @@ EXEC [N&M'S].sp_migrar_chofer
 EXEC [N&M'S].sp_migrar_viaje
 EXEC [N&M'S].sp_migrar_paquete
 EXEC [N&M'S].sp_migrar_paquete_x_viaje;
-
-
 /*EXEC [N&M'S].sp_migrar_orden_de_trabajo
 EXEC [N&M'S].sp_migrar_tarea
 EXEC [N&M'S].sp_migrar_mecanico
@@ -941,6 +934,10 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 6. Facturación total por recorrido por cuatrimestre (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
 
+-- HAY QUE VER ESTO DE "tipo de paquetes que transporta el camión"
+-- QUIZA :: Cambiar paquete_x_viaje por paquete_x_viaje_x_camion ? Que el camion tambien sea PK de la ruptura para saber que camion transporto que tipo de paquete en un viaje
+
+
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
 
@@ -951,7 +948,7 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 8. Ganancia por camión (Ingresos  Costo de viaje  Costo de mantenimiento)
 	- Ingresos: en función de la cantidad y tipo de paquetes que
-	transporta el camión y el recorrido
+	transporta el camión y el recorrido	-------------------------------->>>> SAME AL 6 (tipo de paquetes que transporta el camión)
 
 	- Costo de viaje: costo del chofer + el costo de combustible.
 	Tomar precio por lt de combustible $100
@@ -964,6 +961,7 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 */
 
 /*
+
 SELECT * FROM [N&M'S].Ciudad;
 SELECT * FROM [N&M'S].Recorrido;
 SELECT * FROM [N&M'S].Taller;
@@ -972,15 +970,11 @@ SELECT * FROM [N&M'S].Marca;
 SELECT * FROM [N&M'S].Viaje;
 SELECT * FROM [N&M'S].Camion;
 SELECT * FROM [N&M'S].Paquete;
+SELECT * FROM [N&M'S].Paquete_x_Viaje
 
-SELECT DISTINCT
-	RECORRIDO_CIUDAD_ORIGEN, 
-	RECORRIDO_CIUDAD_DESTINO, 
-	[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO) 
-	FROM gd_esquema.Maestra
-	WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL
 */
 
+-- Se borrara despues
 -- Chequear que no queden transacciones abiertas
 -- SELECT * FROM sys.sysprocesses WHERE open_tran = 1
 
