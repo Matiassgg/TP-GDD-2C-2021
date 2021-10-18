@@ -351,8 +351,7 @@ CREATE TABLE [N&M'S].Tarea_x_Orden (
 CREATE TABLE [N&M'S].Material (
 	material_id NVARCHAR(100) PRIMARY KEY,
 	descripcion NVARCHAR(510),
-	precio decimal
-	CONSTRAINT cod_unique UNIQUE (material_id)
+	precio DECIMAL(18,2)
 );
 
 CREATE TABLE [N&M'S].Material_x_Tarea (
