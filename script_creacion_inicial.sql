@@ -51,23 +51,23 @@ IF OBJECT_ID('[N&M''S].sp_migrar_tarea', 'P') IS NOT NULL
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete;
 GO
 
 IF OBJECT_ID('[N&M''S].sp_tarea_x_orden', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_tarea_x_orden;
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden;
 GO
 
-IF OBJECT_ID('[N&M''S].sp_mecanico', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_mecanico;
+IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
 GO
 
-IF OBJECT_ID('[N&M''S].sp_material', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_material;
+IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material;
 GO
 
-IF OBJECT_ID('[N&M''S].sp_material_x_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_material_x_tarea;
+IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea;
 GO
 
 --------------------------------------------------- 
@@ -103,9 +103,19 @@ IF OBJECT_ID('[N&M''S].fn_obtener_id_recorrido', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_obtener_id_recorrido;
 GO
 
+IF OBJECT_ID('[N&M''S].fn_obtener_id_paquete', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_paquete;
+GO
+
+IF OBJECT_ID('[N&M''S].fn_obtener_id_viaje', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_viaje;
+GO
+
+/*
 IF OBJECT_ID('[N&M''S].fn_xxx', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_xxx;
 GO
+*/
 --------------------------------------------------- 
 -- CHEQUEO DE INDICES
 ---------------------------------------------------
@@ -121,14 +131,36 @@ GO
 --------------------------------------------------- 
 -- CHEQUEO DE TABLAS
 ---------------------------------------------------
+IF OBJECT_ID('[N&M''S].Paquete_x_Viaje', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Paquete_x_Viaje;
+
 IF OBJECT_ID('[N&M''S].Viaje', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Viaje;
 
-IF OBJECT_ID('[N&M''S].Camion', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Camion;
+IF OBJECT_ID('[N&M''S].Paquete', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Paquete;
 
-IF OBJECT_ID('[N&M''S].Recorrido', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Recorrido;
+IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Tarea_x_Orden;
+GO
+
+IF OBJECT_ID('[N&M''S].Orden_de_Trabajo', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Orden_de_Trabajo;
+
+IF OBJECT_ID('[N&M''S].Mecanico', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Mecanico;
+
+IF OBJECT_ID('[N&M''S].Material_x_Tarea', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Material_x_Tarea;
+
+IF OBJECT_ID('[N&M''S].Tarea', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Tarea;
+
+IF OBJECT_ID('[N&M''S].Material', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Material;
+
+IF OBJECT_ID('[N&M''S].Taller', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Taller;
 
 IF OBJECT_ID('[N&M''S].Modelo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Modelo;
@@ -136,39 +168,17 @@ IF OBJECT_ID('[N&M''S].Modelo', 'U') IS NOT NULL
 IF OBJECT_ID('[N&M''S].Marca', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Marca;
 
-IF OBJECT_ID('[N&M''S].Taller', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Taller;
+IF OBJECT_ID('[N&M''S].Camion', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Camion;
+
+IF OBJECT_ID('[N&M''S].Recorrido', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Recorrido;
 
 IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Ciudad;
 
 IF OBJECT_ID('[N&M''S].Chofer', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Chofer;
-
-IF OBJECT_ID('[N&M''S].Paquete', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Paquete;
-
-IF OBJECT_ID('[N&M''S].Paquete_x_Viaje', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Paquete_x_Viaje;
-    
-IF OBJECT_ID('[N&M''S].Orden_de_Trabajo', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Orden_de_Trabajo;
-
-IF OBJECT_ID('[N&M''S].Tarea', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Tarea;
-
-IF OBJECT_ID('[N&M''S].Mecanico', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Mecanico;
-
-IF OBJECT_ID('[N&M''S].Material', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Material;
-
-IF OBJECT_ID('[N&M''S].Material_x_Tarea', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Material_x_Tarea;
-
-IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Tarea_x_Orden;
-GO
 
 BEGIN TRANSACTION
 --------------------------------------------------- 
@@ -259,7 +269,7 @@ CREATE TABLE [N&M'S].Viaje (
 );
 
 CREATE TABLE [N&M'S].Paquete (
-  paquete_id INT PRIMARY KEY IDENTITY(1,1) ,
+  paquete_id INT PRIMARY KEY IDENTITY(1,1),
   descripcion NVARCHAR(510),
   precio DECIMAL(18,2),
   peso_max DECIMAL(18,2),
@@ -304,7 +314,7 @@ CREATE TABLE [N&M'S].Mecanico (
 );
 
 CREATE TABLE [N&M'S].Tarea_x_Orden (
-  nro_orden INT REFERENCES [N&M'S].Orden_de_Trabajo(nro_orden) ,
+  nro_orden INT REFERENCES [N&M'S].Orden_de_Trabajo(nro_orden),
   tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
   mecanico_id INT REFERENCES [N&M'S].Mecanico(mecanico_id),
   fecha_inicio_planificada DATETIME2,
@@ -431,14 +441,43 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_recorrido(@ciudad_origen NVARCHAR(510), @c
 		SELECT @recorrido_id = recorrido_id 
 		FROM [N&M'S].Recorrido 
 		WHERE id_ciudad_origen = @id_recorrido_ciudad_origen AND 
-			id_ciudad_destino = @id_recorrido_ciudad_destino AND 
-			@ciudad_origen IS NOT NULL AND 
-			@ciudad_destino IS NOT NULL
+			id_ciudad_destino = @id_recorrido_ciudad_destino 
 
 		RETURN @recorrido_id
 	END
 GO
 
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: 
+	@parameters: banana_id
+	@return: 
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_viaje(@id_camion INT, @id_chofer INT, @id_recorrido INT) 
+	RETURNS INT AS
+	BEGIN
+		DECLARE @nro_viaje INT
+		SELECT @nro_viaje = nro_viaje 
+			FROM [N&M'S].Viaje 
+			WHERE 
+				camion_id = @id_camion AND chofer_id = @id_chofer AND recorrido_id = @id_recorrido
+		RETURN @nro_viaje
+	END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: 
+	@parameters: banana_id
+	@return: 
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_paquete(@descripcion VARCHAR(510)) RETURNS INT AS
+	BEGIN
+		DECLARE @paquete_id INT
+		SELECT @paquete_id = paquete_id FROM [N&M'S].Paquete WHERE descripcion = @descripcion
+		RETURN @paquete_id;
+	END
+GO
 
 /*
 
@@ -652,7 +691,6 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 	END CATCH
 GO
 
---Revisar a partir de aca las SP
 
 CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -661,10 +699,25 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Paquete(paquete_id,cantidad_paquete)
-			SELECT DISTINCT PAQUETE_X_VIAJE_PAQUETE_ID, PAQUETE_X_VIAJE_CANTIDAD_PAQUETE
-			FROM gd_esquema.Maestra
-			WHERE PAQUETE_X_VIAJE_PAQUETE_ID IS NOT NULL
+
+			INSERT INTO [N&M'S].Paquete_x_Viaje(nro_viaje, paquete_id, cantidad_paquete)
+				SELECT DISTINCT
+					[N&M'S].fn_obtener_id_viaje( 
+						[N&M'S].fn_obtener_id_camion(CAMION_PATENTE),
+						[N&M'S].fn_obtener_id_chofer(CHOFER_NRO_LEGAJO), 
+						[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO)
+						),
+					[N&M'S].fn_obtener_id_paquete(PAQUETE_DESCRIPCION),
+					PAQUETE_CANTIDAD
+				FROM gd_esquema.Maestra
+				WHERE CHOFER_NRO_LEGAJO IS NOT NULL AND 
+					CAMION_PATENTE IS NOT NULL AND 
+					RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND 
+					RECORRIDO_CIUDAD_DESTINO IS NOT NULL AND
+					PAQUETE_DESCRIPCION IS NOT NULL AND
+					PAQUETE_CANTIDAD IS NOT NULL
+
+
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -674,6 +727,8 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 GO
 
 
+--Revisar a partir de aca las SP
+/*
 CREATE PROCEDURE [N&M'S].sp_migrar_order_de_trabajo AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -693,9 +748,9 @@ CREATE PROCEDURE [N&M'S].sp_migrar_order_de_trabajo AS
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
-GO
+GO*/
 
-
+/*
 CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -795,7 +850,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
-GO
+GO*/
 /*
 CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -831,13 +886,16 @@ EXEC [N&M'S].sp_migrar_camion
 EXEC [N&M'S].sp_migrar_chofer
 EXEC [N&M'S].sp_migrar_viaje
 EXEC [N&M'S].sp_migrar_paquete
-EXEC [N&M'S].sp_migrar_paquete_x_viaje
-EXEC [N&M'S].sp_migrar_orden_de_trabajo
+EXEC [N&M'S].sp_migrar_paquete_x_viaje;
+
+
+/*EXEC [N&M'S].sp_migrar_orden_de_trabajo
 EXEC [N&M'S].sp_migrar_tarea
 EXEC [N&M'S].sp_migrar_mecanico
 EXEC [N&M'S].sp_migrar_tarea_x_orden
 EXEC [N&M'S].sp_migrar_material
 EXEC [N&M'S].sp_migrar_material_x_tarea
+*/
 
 /*
 ---------------------------------------------------
@@ -913,7 +971,6 @@ SELECT * FROM [N&M'S].Modelo;
 SELECT * FROM [N&M'S].Marca;
 SELECT * FROM [N&M'S].Viaje;
 SELECT * FROM [N&M'S].Camion;
-SELECT * FROM [N&M'S].Chofer;
 SELECT * FROM [N&M'S].Paquete;
 
 SELECT DISTINCT
@@ -923,6 +980,9 @@ SELECT DISTINCT
 	FROM gd_esquema.Maestra
 	WHERE RECORRIDO_CIUDAD_ORIGEN IS NOT NULL AND RECORRIDO_CIUDAD_DESTINO IS NOT NULL
 */
+
+-- Chequear que no queden transacciones abiertas
+-- SELECT * FROM sys.sysprocesses WHERE open_tran = 1
 
 BEGIN
 	DECLARE @id_test BIT = 1;
