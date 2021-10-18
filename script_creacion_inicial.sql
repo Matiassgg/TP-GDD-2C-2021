@@ -70,6 +70,25 @@ IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea;
 GO
 
+IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_tarea_x_orden', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material;
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea;
+GO
 --------------------------------------------------- 
 -- CHEQUEO DE VISTAS
 ---------------------------------------------------
@@ -111,6 +130,18 @@ IF OBJECT_ID('[N&M''S].fn_obtener_id_viaje', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_obtener_id_viaje;
 GO
 
+IF OBJECT_ID('[N&M''S].fn_obtener_id_taller', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_taller;
+GO
+
+IF OBJECT_ID('[N&M''S].fn_obtener_nro_orden', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_nro_orden;
+GO
+
+IF OBJECT_ID('[N&M''S].fn_obtener_id_mecanico', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_mecanico;
+GO
+
 /*
 IF OBJECT_ID('[N&M''S].fn_xxx', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_xxx;
@@ -120,11 +151,6 @@ GO
 -- CHEQUEO DE INDICES
 ---------------------------------------------------
 -- xxx seria la tabla donde le "pega" ese indice
-
-------------------
--- QUIZA haya que crear un indice para la tabla de viajes, ya que tiene varios registros ...
-------------------
-
 IF OBJECT_ID('[N&M''S].xxx.idx_xxx') IS NOT NULL
   DROP INDEX [N&M'S].xxx.idx_xxx;
 GO
@@ -170,11 +196,11 @@ IF OBJECT_ID('[N&M''S].Modelo', 'U') IS NOT NULL
 IF OBJECT_ID('[N&M''S].Marca', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Marca;
 
-IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Ciudad;
-
 IF OBJECT_ID('[N&M''S].Recorrido', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Recorrido;
+
+IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].Ciudad;
 
 IF OBJECT_ID('[N&M''S].Chofer', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].Chofer;
@@ -192,7 +218,6 @@ GO
 
 CREATE SCHEMA "N&M'S";
 GO
-
 --------------------------------------------------- 
 -- CREACION DE TABLAS
 ---------------------------------------------------
@@ -200,142 +225,141 @@ PRINT 'Creando TABLAS para la migracion de datos en base al DER planteado' + CHA
 GO
 
 CREATE TABLE [N&M'S].Ciudad (
-  ciudad_id INT PRIMARY KEY IDENTITY(1,1),
-  nombre NVARCHAR(510) NOT NULL 
+	ciudad_id INT PRIMARY KEY IDENTITY(1,1),
+	nombre NVARCHAR(510) NOT NULL 
 );
 
 CREATE TABLE [N&M'S].Recorrido (
-  recorrido_id INT PRIMARY KEY IDENTITY(1,1),
-  id_ciudad_origen INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
-  id_ciudad_destino INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
-  km_recorridos INT NOT NULL,
-  precio DECIMAL(18,2) NOT NULL
+	recorrido_id INT PRIMARY KEY IDENTITY(1,1),
+	id_ciudad_origen INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
+	id_ciudad_destino INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
+	km_recorridos INT NOT NULL,
+	precio DECIMAL(18,2) NOT NULL
 );
 
 CREATE TABLE [N&M'S].Taller (
-  taller_id INT PRIMARY KEY IDENTITY(1,1),
-  ciudad_id INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
-  nombre NVARCHAR(510) NOT NULL,
-  direccion NVARCHAR(510),
-  telefono DECIMAL(18,0),
-  mail NVARCHAR(510)
+	taller_id INT PRIMARY KEY IDENTITY(1,1),
+	ciudad_id INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
+	nombre NVARCHAR(510) NOT NULL,
+	direccion NVARCHAR(510),
+	telefono DECIMAL(18,0),
+	mail NVARCHAR(510)
 );
 
 CREATE TABLE [N&M'S].Modelo (
-  modelo_id INT PRIMARY KEY IDENTITY(1,1),
-  descripcion NVARCHAR(510) NOT NULL,
-  velocidad_max INT NOT NULL,
-  capacidad_tanque INT NOT NULL,
-  capacidad_carga INT NOT NULL
+	modelo_id INT PRIMARY KEY IDENTITY(1,1),
+	descripcion NVARCHAR(510) NOT NULL,
+	velocidad_max INT NOT NULL,
+	capacidad_tanque INT NOT NULL,
+	capacidad_carga INT NOT NULL
 );
 
 CREATE TABLE [N&M'S].Marca (
-  marca_id INT PRIMARY KEY IDENTITY(1,1),
-  descripcion NVARCHAR(510) NOT NULL
+	marca_id INT PRIMARY KEY IDENTITY(1,1),
+	descripcion NVARCHAR(510) NOT NULL
 );
 
 CREATE TABLE [N&M'S].Camion (
-  camion_id INT PRIMARY KEY IDENTITY(1,1),
-  marca_id INT NOT NULL REFERENCES [N&M'S].Marca(marca_id),
-  modelo_id INT NOT NULL REFERENCES [N&M'S].Modelo(modelo_id),
-  patente NVARCHAR(510) NOT NULL,
-  nro_chasis NVARCHAR(510),
-  nro_motor NVARCHAR(510),
-  fecha_alta DATETIME2
+	camion_id INT PRIMARY KEY IDENTITY(1,1),
+	marca_id INT NOT NULL REFERENCES [N&M'S].Marca(marca_id),
+	modelo_id INT NOT NULL REFERENCES [N&M'S].Modelo(modelo_id),
+	patente NVARCHAR(510) NOT NULL,
+	nro_chasis NVARCHAR(510),
+	nro_motor NVARCHAR(510),
+	fecha_alta DATETIME2
 );
 
 CREATE TABLE [N&M'S].Chofer (
-  chofer_id INT PRIMARY KEY IDENTITY(1,1),
-  nombre NVARCHAR(510) NOT NULL,
-  apellido NVARCHAR(510) NOT NULL,
-  dni DECIMAL(18,0) NOT NULL,
-  direccion NVARCHAR(510),
-  telefono INT,
-  mail NVARCHAR(510),
-  fecha_nacimiento DATETIME2,
-  legajo INT NOT NULL,
-  costo_x_hora INT NOT NULL
+	chofer_id INT PRIMARY KEY IDENTITY(1,1),
+	nombre NVARCHAR(510) NOT NULL,
+	apellido NVARCHAR(510) NOT NULL,
+	dni DECIMAL(18,0) NOT NULL,
+	direccion NVARCHAR(510),
+	telefono INT,
+	mail NVARCHAR(510),
+	fecha_nacimiento DATETIME2,
+	legajo INT NOT NULL,
+	costo_x_hora INT NOT NULL
 );
 
 CREATE TABLE [N&M'S].Viaje (
-  nro_viaje INT PRIMARY KEY IDENTITY(1,1),
-  camion_id INT NOT NULL REFERENCES [N&M'S].Camion(camion_id),
-  chofer_id INT NOT NULL REFERENCES [N&M'S].Chofer(chofer_id),
-  recorrido_id INT NOT NULL REFERENCES [N&M'S].Recorrido(recorrido_id),
-  fecha_inicio DATETIME2,
-  fecha_fin DATETIME2,
-  consumo_combustible DECIMAL(18,2)
+	nro_viaje INT PRIMARY KEY IDENTITY(1,1),
+	camion_id INT NOT NULL REFERENCES [N&M'S].Camion(camion_id),
+	chofer_id INT NOT NULL REFERENCES [N&M'S].Chofer(chofer_id),
+	recorrido_id INT NOT NULL REFERENCES [N&M'S].Recorrido(recorrido_id),
+	fecha_inicio DATETIME2,
+	fecha_fin DATETIME2,
+	consumo_combustible DECIMAL(18,2)
 );
 
 CREATE TABLE [N&M'S].Paquete (
-  paquete_id INT PRIMARY KEY IDENTITY(1,1),
-  descripcion NVARCHAR(510),
-  precio DECIMAL(18,2),
-  peso_max DECIMAL(18,2),
-  alto_max DECIMAL(18,2),
-  ancho_max DECIMAL(18,2),
-  largo_max DECIMAL(18,2),
+	paquete_id INT PRIMARY KEY IDENTITY(1,1),
+	descripcion NVARCHAR(510),
+	precio DECIMAL(18,2),
+	peso_max DECIMAL(18,2),
+	alto_max DECIMAL(18,2),
+	ancho_max DECIMAL(18,2),
+	largo_max DECIMAL(18,2),
 );
 
 CREATE TABLE [N&M'S].Paquete_x_Viaje (
-  nro_viaje INT REFERENCES [N&M'S].Viaje(nro_viaje),
-  paquete_id INT REFERENCES [N&M'S].Paquete(paquete_id),
-  cantidad_paquete INT,
-  PRIMARY KEY(nro_viaje,paquete_id)
+	nro_viaje INT REFERENCES [N&M'S].Viaje(nro_viaje),
+	paquete_id INT REFERENCES [N&M'S].Paquete(paquete_id),
+	cantidad_paquete INT,
+	PRIMARY KEY(nro_viaje,paquete_id)
 );
 
 CREATE TABLE [N&M'S].Orden_de_Trabajo (
-  nro_orden INT PRIMARY KEY IDENTITY(1,1),
-  camion_id INT REFERENCES [N&M'S].Camion(camion_id),
-  taller_id INT REFERENCES [N&M'S].Taller(taller_id),
-  fecha_generada DATETIME2,
-  estado NVARCHAR(510),
+	nro_orden INT PRIMARY KEY IDENTITY(1,1),
+	camion_id INT REFERENCES [N&M'S].Camion(camion_id),
+	taller_id INT REFERENCES [N&M'S].Taller(taller_id),
+	fecha_generada DATETIME2,
+	estado NVARCHAR(510),
 );
 
 CREATE TABLE [N&M'S].Tarea (
-  tarea_id INT PRIMARY KEY IDENTITY(1,1),
-  tipo_tarea NVARCHAR(510),
-  nombre NVARCHAR(510),
-  tiempo_estimado INT,
+	tarea_id INT PRIMARY KEY,
+	tipo_tarea NVARCHAR(510),
+	nombre NVARCHAR(510),
+	tiempo_estimado INT,
 );
 
 CREATE TABLE [N&M'S].Mecanico (
-  mecanico_id INT PRIMARY KEY IDENTITY(1,1),
-  nombre NVARCHAR(510),
-  apellido NVARCHAR(510),
-  dni DECIMAL(18,0),
-  direccion NVARCHAR(510),
-  telefono INT,
-  mail NVARCHAR(510),
-  fecha_nacimiento DATETIME2,
-  legajo INT,
-  costo_x_hora INT,
+	mecanico_id INT PRIMARY KEY IDENTITY(1,1),
+	nombre NVARCHAR(510),
+	apellido NVARCHAR(510),
+	dni DECIMAL(18,0),
+	direccion NVARCHAR(510),
+	telefono INT,
+	mail NVARCHAR(510),
+	fecha_nacimiento DATETIME2,
+	legajo INT,
+	costo_x_hora INT,
 );
 
 CREATE TABLE [N&M'S].Tarea_x_Orden (
-  nro_orden INT REFERENCES [N&M'S].Orden_de_Trabajo(nro_orden),
-  tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
-  mecanico_id INT REFERENCES [N&M'S].Mecanico(mecanico_id),
-  fecha_inicio_planificada DATETIME2,
-  fecha_inicio_real DATETIME2,
-  fecha_fin_real DATETIME2,
-  tiempo_ejecucion INT,
-  PRIMARY KEY (nro_orden, tarea_id),
+	id_tarea_x_nro_orden INT PRIMARY KEY IDENTITY(1,1),
+	nro_orden INT REFERENCES [N&M'S].Orden_de_Trabajo(nro_orden),
+	tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
+	mecanico_id INT REFERENCES [N&M'S].Mecanico(mecanico_id),
+	fecha_inicio_planificada DATETIME2,
+	fecha_inicio_real DATETIME2,
+	fecha_fin_real DATETIME2,
+	tiempo_ejecucion INT
 );
 
 CREATE TABLE [N&M'S].Material (
-  material_id INT PRIMARY KEY IDENTITY(1,1),
-  cod NVARCHAR(100),
-  descripcion NVARCHAR(510),
-  precio decimal
-  CONSTRAINT cod_unique UNIQUE (cod)
+	material_id NVARCHAR(100) PRIMARY KEY,
+	descripcion NVARCHAR(510),
+	precio decimal
+	CONSTRAINT cod_unique UNIQUE (material_id)
 );
 
 CREATE TABLE [N&M'S].Material_x_Tarea (
-  tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
-  material_id INT REFERENCES [N&M'S].Material(material_id),
-  cantidad INT,
-  PRIMARY KEY (tarea_id, material_id),
+	tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
+	material_id NVARCHAR(100) REFERENCES [N&M'S].Material(material_id),
+	cantidad INT,
+	PRIMARY KEY (tarea_id, material_id),
 );
 GO
 
@@ -345,9 +369,11 @@ GO
 ---------------------------------------------------
 PRINT 'Creando INDICES' + CHAR(13)
 GO
+-- QUIZA haya que crear un indice para la tabla de viajes, ya que tiene varios registros ...
 
 -- Nose si son necesarios todavia, pero dejo el molde
 CREATE INDEX idx_xxx ON [N&M'S].xxx (..., ...); 
+
 */
 ---------------------------------------------------
 -- CREACION DE FUNCIONES
@@ -475,6 +501,48 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_paquete(@descripcion VARCHAR(510)) RETURNS
 		DECLARE @paquete_id INT
 		SELECT @paquete_id = paquete_id FROM [N&M'S].Paquete WHERE descripcion = @descripcion
 		RETURN @paquete_id;
+	END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Obtener el id del taller en su a su nombre
+	@parameters: taller_id
+	@return: El id del taller
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_taller(@nombre_taller VARCHAR(510)) RETURNS INT AS
+	BEGIN
+		DECLARE @taller_id INT
+		SELECT @taller_id = taller_id FROM [N&M'S].Taller WHERE nombre = @nombre_taller		
+		RETURN @taller_id;
+	END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un id de camion y un id de taller, devuelve la OT que tenga asignada ese camion
+	@parameters: El camion que tiene ya asignada una OT y el taller id
+	@return: El numero de orden de esa OT
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_nro_orden(@camion_id INT, @taller_id INT) RETURNS INT AS
+	BEGIN
+		DECLARE @nro_orden INT
+		SELECT @nro_orden = nro_orden FROM [N&M'S].Orden_de_Trabajo WHERE camion_id = @camion_id AND taller_id = @taller_id
+		RETURN @nro_orden;
+	END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un numero de legajo, me devuelve el mecanico_id de la tabla Mecanico que corresponde a ese legajo
+	@parameters: Legajo del mecanico
+	@return: El id del mecanico que encuentre
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_mecanico(@legajo NVARCHAR(510)) RETURNS INT AS
+	BEGIN
+		DECLARE @mecanico_id INT
+		SELECT @mecanico_id = mecanico_id FROM [N&M'S].Mecanico WHERE legajo = @legajo
+		RETURN @mecanico_id
 	END
 GO
 
@@ -636,7 +704,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_chofer AS
 			INSERT INTO [N&M'S].Chofer(nombre, apellido, dni, direccion, telefono, mail, fecha_nacimiento, legajo, costo_x_hora)
 			SELECT DISTINCT CHOFER_NOMBRE, CHOFER_APELLIDO, CHOFER_DNI, CHOFER_DIRECCION, CHOFER_TELEFONO, CHOFER_MAIL, CHOFER_FECHA_NAC, CHOFER_NRO_LEGAJO, CHOFER_COSTO_HORA 
 			FROM gd_esquema.Maestra
-			WHERE CHOFER_DNI IS NOT NULL
+			WHERE CHOFER_NRO_LEGAJO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -678,7 +746,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Paquete(descripcion, precio,peso_max,alto_max, ancho_max, largo_max)
+			INSERT INTO [N&M'S].Paquete(descripcion, precio,peso_max, alto_max, ancho_max, largo_max)
 			SELECT DISTINCT PAQUETE_DESCRIPCION, PAQUETE_PRECIO, PAQUETE_PESO_MAX, PAQUETE_ALTO_MAX, PAQUETE_ANCHO_MAX, PAQUETE_LARGO_MAX
 			FROM gd_esquema.Maestra
 			WHERE PAQUETE_DESCRIPCION IS NOT NULL
@@ -689,7 +757,6 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
-
 
 CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
@@ -705,7 +772,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 						[N&M'S].fn_obtener_id_chofer(CHOFER_NRO_LEGAJO), 
 						[N&M'S].fn_obtener_id_recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO)),
 					[N&M'S].fn_obtener_id_paquete(PAQUETE_DESCRIPCION),
-					SUM(PAQUETE_CANTIDAD)
+					SUM(PAQUETE_CANTIDAD) 
 				FROM gd_esquema.Maestra
 				WHERE CHOFER_NRO_LEGAJO IS NOT NULL AND 
 					CAMION_PATENTE IS NOT NULL AND 
@@ -721,31 +788,33 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 	END CATCH
 GO
 
---Revisar a partir de aca las SP
-
-/*
-CREATE PROCEDURE [N&M'S].sp_migrar_order_de_trabajo AS
+CREATE PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
 	DECLARE @ErrorState INT;
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Orden_de_Trabajo(camion_id,taller_id, fecha_generada, estado)
-			SELECT DISTINCT ORDEN_DE_TRABAJO_CAMION_ID, ORDEN_DE_TRABAJO_TALLER_ID, ORDEN_TRABAJO_FECHA, ORDEN_TRABAJO_ESTADO
-			FROM gd_esquema.Maestra
-			WHERE ORDEN_DE_TRABAJO_NRO_ORDEN IS NOT NULL AND
-			ORDEN_DE_TRABAJO_CAMION_ID IS NOT NULL AND 
-			ORDEN_DE_TRABAJO_TALLER_ID IS NOT NULL
+			INSERT INTO [N&M'S].Orden_de_Trabajo(camion_id, taller_id, fecha_generada, estado)
+			SELECT DISTINCT 
+				[N&M'S].fn_obtener_id_camion(CAMION_PATENTE), 
+				[N&M'S].fn_obtener_id_taller(TALLER_NOMBRE), 
+				ORDEN_TRABAJO_FECHA, 
+				ORDEN_TRABAJO_ESTADO
+				FROM gd_esquema.Maestra
+				WHERE CAMION_PATENTE IS NOT NULL AND
+				TALLER_NOMBRE IS NOT NULL AND 
+				ORDEN_TRABAJO_FECHA IS NOT NULL AND
+				ORDEN_TRABAJO_ESTADO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
-GO*/
+GO
 
-/*
+
 CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -753,8 +822,12 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Tarea(tarea_id,tipo_tarea,nombre, tiempo_estimado)
-			SELECT DISTINCT TAREA_CODIGO,TIPO_TAREA, TAREA_DESCRIPCION, TAREA_TIEMPO_ESTIMADO
+			INSERT INTO [N&M'S].Tarea(tarea_id, tipo_tarea, nombre, tiempo_estimado)
+			SELECT DISTINCT 
+				TAREA_CODIGO,
+				REPLACE(TIPO_TAREA, 'Mantenimiento ', ''), 
+				TAREA_DESCRIPCION,
+				TAREA_TIEMPO_ESTIMADO
 			FROM gd_esquema.Maestra
 			WHERE TAREA_CODIGO IS NOT NULL 
 		COMMIT TRANSACTION
@@ -765,6 +838,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 	END CATCH
 GO
 
+
 CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -772,10 +846,19 @@ CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Mecanico(nombre, apellido,dni,direccion,telefono,mail,fecha_nacimiento,legajo,
-			costo_x_hora)
-			SELECT DISTINCT MECANICO_NOMBRE,MECANICO_APELLIDO,MECANICO_DNI,MECANICO_DIRECCION,MECANICO_TELEFONO, MECANICO_MAIL, MECANICO_FECHA_NAC, MECANICO_NRO_LEGAJO, MECANICO_COSTO_HORA
+			INSERT INTO [N&M'S].Mecanico(nombre, apellido, dni, direccion, telefono, mail, fecha_nacimiento, legajo, costo_x_hora)
+			SELECT DISTINCT 
+				MECANICO_NOMBRE,
+				MECANICO_APELLIDO,
+				MECANICO_DNI,
+				MECANICO_DIRECCION,
+				MECANICO_TELEFONO, 
+				MECANICO_MAIL, 
+				MECANICO_FECHA_NAC, 
+				MECANICO_NRO_LEGAJO,
+				MECANICO_COSTO_HORA
 			FROM gd_esquema.Maestra
+			WHERE MECANICO_NRO_LEGAJO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -791,13 +874,21 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Tarea_x_Orden(nro_orden,tarea_id, 
-			mecanico_id,fecha_inicio_planificada,fecha_inicio_real,fecha_fin_real,tiempo_ejecucion)
+			INSERT INTO [N&M'S].Tarea_x_Orden(nro_orden,tarea_id,mecanico_id,fecha_inicio_planificada,fecha_inicio_real,fecha_fin_real,tiempo_ejecucion)
 			SELECT DISTINCT 
-			TAREA_X_ORDEN_NRO_ORDEN,TAREA_CODIGO,TAREA_X_ORDEN_MECANICO_ID,TAREA_FECHA_INICIO_PLANIFICADO,TAREA_FECHA_INICIO,TAREA_FECHA_FIN, [N&M'S].fn_obtener_tiempo_de_ejecucion_de_tarea(TAREA_FECHA_INICIO,TAREA_FECHA_FIN))
+			[N&M'S].fn_obtener_nro_orden(
+				[N&M'S].fn_obtener_id_camion(CAMION_PATENTE),
+				[N&M'S].fn_obtener_id_taller(TALLER_NOMBRE)),
+			TAREA_CODIGO,
+			[N&M'S].fn_obtener_id_mecanico(MECANICO_NRO_LEGAJO),
+			TAREA_FECHA_INICIO_PLANIFICADO,
+			TAREA_FECHA_INICIO,
+			TAREA_FECHA_FIN, 
+			DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN) -- Tiempo de ejecucion en DIAS
 			FROM gd_esquema.Maestra
-			WHERE TAREA_X_ORDEN_NRO_ORDEN IS NOT NULL AND
-			TAREA_X_ORDEN_TAREA_ID IS NOT NULL
+			WHERE CAMION_PATENTE IS NOT NULL AND
+			TALLER_NOMBRE IS NOT NULL AND
+			MECANICO_NRO_LEGAJO IS NOT NULL
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -806,6 +897,9 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
 	END CATCH
 GO
 
+--Revisar a partir de aca las SP
+
+/*
 CREATE PROCEDURE [N&M'S].sp_migrar_material AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -882,11 +976,11 @@ EXEC [N&M'S].sp_migrar_chofer
 EXEC [N&M'S].sp_migrar_viaje
 EXEC [N&M'S].sp_migrar_paquete
 EXEC [N&M'S].sp_migrar_paquete_x_viaje;
-/*EXEC [N&M'S].sp_migrar_orden_de_trabajo
+EXEC [N&M'S].sp_migrar_orden_de_trabajo;
 EXEC [N&M'S].sp_migrar_tarea
 EXEC [N&M'S].sp_migrar_mecanico
 EXEC [N&M'S].sp_migrar_tarea_x_orden
-EXEC [N&M'S].sp_migrar_material
+/*EXEC [N&M'S].sp_migrar_material
 EXEC [N&M'S].sp_migrar_material_x_tarea
 */
 
@@ -934,8 +1028,10 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 6. Facturación total por recorrido por cuatrimestre (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
 
--- HAY QUE VER ESTO DE "tipo de paquetes que transporta el camión"
--- QUIZA :: Cambiar paquete_x_viaje por paquete_x_viaje_x_camion ? Que el camion tambien sea PK de la ruptura para saber que camion transporto que tipo de paquete en un viaje
+SELECT pxv.paquete_id, cantidad_paquete ,v.*
+	FROM [N&M'S].Viaje v
+		JOIN [N&M'S].Paquete_x_Viaje pxv ON pxv.nro_viaje = v.nro_viaje
+	WHERE camion_id = 23  
 
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
@@ -948,7 +1044,7 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 8. Ganancia por camión (Ingresos  Costo de viaje  Costo de mantenimiento)
 	- Ingresos: en función de la cantidad y tipo de paquetes que
-	transporta el camión y el recorrido	-------------------------------->>>> SAME AL 6 (tipo de paquetes que transporta el camión)
+	transporta el camión y el recorrido
 
 	- Costo de viaje: costo del chofer + el costo de combustible.
 	Tomar precio por lt de combustible $100
@@ -971,6 +1067,12 @@ SELECT * FROM [N&M'S].Viaje;
 SELECT * FROM [N&M'S].Camion;
 SELECT * FROM [N&M'S].Paquete;
 SELECT * FROM [N&M'S].Paquete_x_Viaje
+SELECT * FROM [N&M'S].Orden_de_Trabajo
+SELECT * FROM [N&M'S].Tarea
+SELECT * FROM [N&M'S].Mecanico
+SELECT * FROM [N&M'S].Tarea_x_Orden
+SELECT * FROM [N&M'S].Material
+SELECT * FROM [N&M'S].Material_x_Tarea
 
 */
 
