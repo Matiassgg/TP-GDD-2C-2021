@@ -141,12 +141,6 @@ GO
 IF OBJECT_ID('[N&M''S].fn_obtener_id_mecanico', 'FN') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_obtener_id_mecanico;
 GO
-
-/*
-IF OBJECT_ID('[N&M''S].fn_xxx', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_xxx;
-GO
-*/
 --------------------------------------------------- 
 -- CHEQUEO DE INDICES
 ---------------------------------------------------
@@ -544,20 +538,6 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_mecanico(@legajo NVARCHAR(510)) RETURNS IN
 		RETURN @mecanico_id
 	END
 GO
-
-/*
-
-@autors: Grupo 18 - N&M'S
-@desc: 
-@parameters: banana_id
-@return: 
-
-CREATE FUNCTION [N&M'S].fn_xxx(@banana_id INT) RETURNS INT AS
-	BEGIN
-		RETURN @banana_id;
-	END
-GO
-*/
 ---------------------------------------------------
 -- CREACION DE STORED PROCEDURES
 ---------------------------------------------------
@@ -896,9 +876,6 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
 	END CATCH
 GO
 
---Revisar a partir de aca las SP
-
-/*
 CREATE PROCEDURE [N&M'S].sp_migrar_material AS
 	DECLARE @ErrorMessage NVARCHAR(MAX);  
 	DECLARE @ErrorSeverity INT;  
@@ -906,9 +883,11 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Material(cod,descripcion,precio)
+			INSERT INTO [N&M'S].Material(material_id,descripcion,precio)
 			SELECT DISTINCT 
-			MATERIAL_COD,MATERIAL_DESCRIPCION, MATERIAL_PRECIO
+				MATERIAL_COD,
+				MATERIAL_DESCRIPCION,
+				MATERIAL_PRECIO
 			FROM gd_esquema.Maestra
 			WHERE MATERIAL_COD IS NOT NULL
 		COMMIT TRANSACTION
@@ -926,39 +905,22 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Material_x_Tarea(material_id,tarea_id,cantidad)
+			INSERT INTO [N&M'S].Material_x_Tarea(tarea_id,material_id,cantidad)
 			SELECT DISTINCT 
-			MATERIAL_X_TAREA_MATERIAL_ID, MATERIAL_X_TAREA_TAREA_ID,MATERIAL_X_TAREA_CANTIDAD
-			FROM gd_esquema.Maestra
-			WHERE MATERIAL_X_TAREA_MATERIAL_ID IS NOT NULL AND
-			MATERIAL_X_TAREA_TAREA_ID IS NOT NULL
+				TAREA_CODIGO,
+				MATERIAL_COD,
+				COUNT(*)
+			FROM gd_esquema.Maestra M1
+			WHERE MATERIAL_COD IS NOT NULL AND TAREA_CODIGO IS NOT NULL
+			GROUP BY TAREA_CODIGO, MATERIAL_COD
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
-	END CATCH
-GO*/
-/*
-CREATE PROCEDURE [N&M'S].sp_migrar_xxxxx AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
-
-	BEGIN TRY
-		BEGIN TRANSACTION
-
-			SELECT 1/0
-
-		COMMIT TRANSACTION
-	END TRY
-	BEGIN CATCH
-			
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
 	END CATCH
 GO
-*/
+
 ---------------------------------------------------
 -- EJECUCIÓN DE STORED PROCEDURES
 ---------------------------------------------------
@@ -979,9 +941,8 @@ EXEC [N&M'S].sp_migrar_orden_de_trabajo;
 EXEC [N&M'S].sp_migrar_tarea
 EXEC [N&M'S].sp_migrar_mecanico
 EXEC [N&M'S].sp_migrar_tarea_x_orden
-/*EXEC [N&M'S].sp_migrar_material
+EXEC [N&M'S].sp_migrar_material
 EXEC [N&M'S].sp_migrar_material_x_tarea
-*/
 
 /*
 ---------------------------------------------------
@@ -1053,9 +1014,6 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 ---------------------------------------------------
-*/
-
-/*
 
 SELECT * FROM [N&M'S].Ciudad;
 SELECT * FROM [N&M'S].Recorrido;
