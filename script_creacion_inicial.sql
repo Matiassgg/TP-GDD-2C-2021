@@ -1,4 +1,4 @@
-USE [GD2C2021];
+USE [GD2C2021]
 GO
 
 PRINT 'Realizando limpieza en base de datos [GD2C2021]' + CHAR(13)
@@ -7,210 +7,215 @@ GO
 -- CHEQUEO DE STORED PROCEDURES
 ---------------------------------------------------
 IF OBJECT_ID('[N&M''S].sp_migrar_ciudad', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_ciudad;
+    DROP PROCEDURE [N&M'S].sp_migrar_ciudad
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_recorrido', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_recorrido;
+    DROP PROCEDURE [N&M'S].sp_migrar_recorrido
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_taller', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_taller;
+    DROP PROCEDURE [N&M'S].sp_migrar_taller
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_modelo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_modelo;
+    DROP PROCEDURE [N&M'S].sp_migrar_modelo
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_marca', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_marca;
+    DROP PROCEDURE [N&M'S].sp_migrar_marca
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_camion', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_camion;
+    DROP PROCEDURE [N&M'S].sp_migrar_camion
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_chofer', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_chofer;
+    DROP PROCEDURE [N&M'S].sp_migrar_chofer
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_viaje', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_viaje;
+    DROP PROCEDURE [N&M'S].sp_migrar_viaje
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_paquete_x_viaje', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje;
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo;
+    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_tarea;
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_paquete;
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete
 GO
 
 IF OBJECT_ID('[N&M''S].sp_tarea_x_orden', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden;
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material;
+    DROP PROCEDURE [N&M'S].sp_migrar_material
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea;
+    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo;
+    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_mecanico;
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_tarea_x_orden', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden;
+    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material;
+    DROP PROCEDURE [N&M'S].sp_migrar_material
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea;
+    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea
 GO
 --------------------------------------------------- 
 -- CHEQUEO DE VISTAS
 ---------------------------------------------------
 IF OBJECT_ID('[N&M''S].vw_xxx', 'V') IS NOT NULL
-	DROP VIEW [N&M'S].vw_xxx;
+	DROP VIEW [N&M'S].vw_xxx
 GO
 --------------------------------------------------- 
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
 IF OBJECT_ID('[N&M''S].fn_obtener_id_ciudad', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_ciudad;
+	DROP FUNCTION [N&M'S].fn_obtener_id_ciudad
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_marca', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_marca;
+	DROP FUNCTION [N&M'S].fn_obtener_id_marca
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_modelo', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_modelo;
+	DROP FUNCTION [N&M'S].fn_obtener_id_modelo
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_camion', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_camion;
+	DROP FUNCTION [N&M'S].fn_obtener_id_camion
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_chofer', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_chofer;
+	DROP FUNCTION [N&M'S].fn_obtener_id_chofer
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_recorrido', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_recorrido;
+	DROP FUNCTION [N&M'S].fn_obtener_id_recorrido
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_paquete', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_paquete;
+	DROP FUNCTION [N&M'S].fn_obtener_id_paquete
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_viaje', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_viaje;
+	DROP FUNCTION [N&M'S].fn_obtener_id_viaje
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_taller', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_taller;
+	DROP FUNCTION [N&M'S].fn_obtener_id_taller
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_nro_orden', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_nro_orden;
+	DROP FUNCTION [N&M'S].fn_obtener_nro_orden
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_mecanico', 'FN') IS NOT NULL
-	DROP FUNCTION [N&M'S].fn_obtener_id_mecanico;
+	DROP FUNCTION [N&M'S].fn_obtener_id_mecanico
 GO
+
+IF OBJECT_ID('[N&M''S].fn_obtener_id_material', 'FN') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_obtener_id_material
+GO
+
 --------------------------------------------------- 
 -- CHEQUEO DE INDICES
 ---------------------------------------------------
 -- xxx seria la tabla donde le "pega" ese indice
 IF OBJECT_ID('[N&M''S].xxx.idx_xxx') IS NOT NULL
-  DROP INDEX [N&M'S].xxx.idx_xxx;
+  DROP INDEX [N&M'S].xxx.idx_xxx
 GO
 --------------------------------------------------- 
 -- CHEQUEO DE TABLAS
 ---------------------------------------------------
 IF OBJECT_ID('[N&M''S].Paquete_x_Viaje', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Paquete_x_Viaje;
+	DROP TABLE [N&M'S].Paquete_x_Viaje
 
 IF OBJECT_ID('[N&M''S].Viaje', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Viaje;
+	DROP TABLE [N&M'S].Viaje
 
 IF OBJECT_ID('[N&M''S].Paquete', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Paquete;
+	DROP TABLE [N&M'S].Paquete
 
 IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Tarea_x_Orden;
+	DROP TABLE [N&M'S].Tarea_x_Orden
 
 IF OBJECT_ID('[N&M''S].Orden_de_Trabajo', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Orden_de_Trabajo;
+	DROP TABLE [N&M'S].Orden_de_Trabajo
 
 IF OBJECT_ID('[N&M''S].Mecanico', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Mecanico;
+	DROP TABLE [N&M'S].Mecanico
 
 IF OBJECT_ID('[N&M''S].Material_x_Tarea', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Material_x_Tarea;
+	DROP TABLE [N&M'S].Material_x_Tarea
 
 IF OBJECT_ID('[N&M''S].Tarea', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Tarea;
+	DROP TABLE [N&M'S].Tarea
 
 IF OBJECT_ID('[N&M''S].Material', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Material;
+	DROP TABLE [N&M'S].Material
 
 IF OBJECT_ID('[N&M''S].Taller', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Taller;
+	DROP TABLE [N&M'S].Taller
 
 IF OBJECT_ID('[N&M''S].Camion', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Camion;
+	DROP TABLE [N&M'S].Camion
 
 IF OBJECT_ID('[N&M''S].Modelo', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Modelo;
+	DROP TABLE [N&M'S].Modelo
 
 IF OBJECT_ID('[N&M''S].Marca', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Marca;
+	DROP TABLE [N&M'S].Marca
 
 IF OBJECT_ID('[N&M''S].Recorrido', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Recorrido;
+	DROP TABLE [N&M'S].Recorrido
 
 IF OBJECT_ID('[N&M''S].Ciudad', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Ciudad;
+	DROP TABLE [N&M'S].Ciudad
 
 IF OBJECT_ID('[N&M''S].Chofer', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Chofer;
+	DROP TABLE [N&M'S].Chofer
 
 BEGIN TRANSACTION
 --------------------------------------------------- 
 -- CHEQUEO Y CREACION DE ESQUEMA
 ---------------------------------------------------
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'N&M''S')
-  DROP SCHEMA [N&M'S];
+  DROP SCHEMA [N&M'S]
 GO
 
 PRINT 'Creando ESQUEMA [N&M''S]' + CHAR(13)
 GO
 
-CREATE SCHEMA "N&M'S";
+CREATE SCHEMA "N&M'S"
 GO
 --------------------------------------------------- 
 -- CREACION DE TABLAS
@@ -221,7 +226,7 @@ GO
 CREATE TABLE [N&M'S].Ciudad (
 	ciudad_id INT PRIMARY KEY IDENTITY(1,1),
 	nombre NVARCHAR(510) NOT NULL 
-);
+)
 
 CREATE TABLE [N&M'S].Recorrido (
 	recorrido_id INT PRIMARY KEY IDENTITY(1,1),
@@ -229,7 +234,7 @@ CREATE TABLE [N&M'S].Recorrido (
 	id_ciudad_destino INT NOT NULL REFERENCES [N&M'S].Ciudad(ciudad_id),
 	km_recorridos INT NOT NULL,
 	precio DECIMAL(18,2) NOT NULL
-);
+)
 
 CREATE TABLE [N&M'S].Taller (
 	taller_id INT PRIMARY KEY IDENTITY(1,1),
@@ -238,7 +243,7 @@ CREATE TABLE [N&M'S].Taller (
 	direccion NVARCHAR(510),
 	telefono DECIMAL(18,0),
 	mail NVARCHAR(510)
-);
+)
 
 CREATE TABLE [N&M'S].Modelo (
 	modelo_id INT PRIMARY KEY IDENTITY(1,1),
@@ -246,12 +251,12 @@ CREATE TABLE [N&M'S].Modelo (
 	velocidad_max INT NOT NULL,
 	capacidad_tanque INT NOT NULL,
 	capacidad_carga INT NOT NULL
-);
+)
 
 CREATE TABLE [N&M'S].Marca (
 	marca_id INT PRIMARY KEY IDENTITY(1,1),
 	descripcion NVARCHAR(510) NOT NULL
-);
+)
 
 CREATE TABLE [N&M'S].Camion (
 	camion_id INT PRIMARY KEY IDENTITY(1,1),
@@ -261,7 +266,7 @@ CREATE TABLE [N&M'S].Camion (
 	nro_chasis NVARCHAR(510),
 	nro_motor NVARCHAR(510),
 	fecha_alta DATETIME2
-);
+)
 
 CREATE TABLE [N&M'S].Chofer (
 	chofer_id INT PRIMARY KEY IDENTITY(1,1),
@@ -274,7 +279,7 @@ CREATE TABLE [N&M'S].Chofer (
 	fecha_nacimiento DATETIME2,
 	legajo INT NOT NULL,
 	costo_x_hora INT NOT NULL
-);
+)
 
 CREATE TABLE [N&M'S].Viaje (
 	nro_viaje INT PRIMARY KEY IDENTITY(1,1),
@@ -284,7 +289,7 @@ CREATE TABLE [N&M'S].Viaje (
 	fecha_inicio DATETIME2,
 	fecha_fin DATETIME2,
 	consumo_combustible DECIMAL(18,2)
-);
+)
 
 CREATE TABLE [N&M'S].Paquete (
 	paquete_id INT PRIMARY KEY IDENTITY(1,1),
@@ -294,14 +299,14 @@ CREATE TABLE [N&M'S].Paquete (
 	alto_max DECIMAL(18,2),
 	ancho_max DECIMAL(18,2),
 	largo_max DECIMAL(18,2),
-);
+)
 
 CREATE TABLE [N&M'S].Paquete_x_Viaje (
 	nro_viaje INT REFERENCES [N&M'S].Viaje(nro_viaje),
 	paquete_id INT REFERENCES [N&M'S].Paquete(paquete_id),
 	cantidad_paquete INT,
 	PRIMARY KEY(nro_viaje,paquete_id)
-);
+)
 
 CREATE TABLE [N&M'S].Orden_de_Trabajo (
 	nro_orden INT PRIMARY KEY IDENTITY(1,1),
@@ -309,14 +314,14 @@ CREATE TABLE [N&M'S].Orden_de_Trabajo (
 	taller_id INT REFERENCES [N&M'S].Taller(taller_id),
 	fecha_generada DATETIME2,
 	estado NVARCHAR(510),
-);
+)
 
 CREATE TABLE [N&M'S].Tarea (
 	tarea_id INT PRIMARY KEY,
 	tipo_tarea NVARCHAR(510),
 	nombre NVARCHAR(510),
 	tiempo_estimado INT,
-);
+)
 
 CREATE TABLE [N&M'S].Mecanico (
 	mecanico_id INT PRIMARY KEY IDENTITY(1,1),
@@ -329,7 +334,7 @@ CREATE TABLE [N&M'S].Mecanico (
 	fecha_nacimiento DATETIME2,
 	legajo INT,
 	costo_x_hora INT,
-);
+)
 
 CREATE TABLE [N&M'S].Tarea_x_Orden (
 	id_tarea_x_nro_orden INT PRIMARY KEY IDENTITY(1,1),
@@ -340,20 +345,21 @@ CREATE TABLE [N&M'S].Tarea_x_Orden (
 	fecha_inicio_real DATETIME2,
 	fecha_fin_real DATETIME2,
 	tiempo_ejecucion INT
-);
+)
 
 CREATE TABLE [N&M'S].Material (
-	material_id NVARCHAR(100) PRIMARY KEY,
+	material_id INT PRIMARY KEY IDENTITY(1,1),
+	codigo NVARCHAR(100),
 	descripcion NVARCHAR(510),
 	precio DECIMAL(18,2)
-);
+)
 
 CREATE TABLE [N&M'S].Material_x_Tarea (
 	tarea_id INT REFERENCES [N&M'S].Tarea(tarea_id),
-	material_id NVARCHAR(100) REFERENCES [N&M'S].Material(material_id),
+	material_id INT REFERENCES [N&M'S].Material(material_id),
 	cantidad INT,
 	PRIMARY KEY (tarea_id, material_id),
-);
+)
 GO
 
 /*
@@ -365,7 +371,7 @@ GO
 -- QUIZA haya que crear un indice para la tabla de viajes, ya que tiene varios registros ...
 
 -- Nose si son necesarios todavia, pero dejo el molde
-CREATE INDEX idx_xxx ON [N&M'S].xxx (..., ...); 
+CREATE INDEX idx_xxx ON [N&M'S].xxx (..., ...)
 
 */
 ---------------------------------------------------
@@ -382,9 +388,9 @@ GO
 */
 CREATE FUNCTION [N&M'S].fn_obtener_id_ciudad(@ciudad_nombre NVARCHAR(510)) RETURNS INT AS
 	BEGIN
-		DECLARE @ciudad_id INT;
+		DECLARE @ciudad_id INT
 		SELECT @ciudad_id = ciudad_id FROM [N&M'S].Ciudad WHERE nombre = @ciudad_nombre
-		RETURN @ciudad_id;
+		RETURN @ciudad_id
 	END
 GO
 
@@ -493,7 +499,7 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_paquete(@descripcion VARCHAR(510)) RETURNS
 	BEGIN
 		DECLARE @paquete_id INT
 		SELECT @paquete_id = paquete_id FROM [N&M'S].Paquete WHERE descripcion = @descripcion
-		RETURN @paquete_id;
+		RETURN @paquete_id
 	END
 GO
 
@@ -507,7 +513,7 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_taller(@nombre_taller VARCHAR(510)) RETURN
 	BEGIN
 		DECLARE @taller_id INT
 		SELECT @taller_id = taller_id FROM [N&M'S].Taller WHERE nombre = @nombre_taller		
-		RETURN @taller_id;
+		RETURN @taller_id
 	END
 GO
 
@@ -521,7 +527,7 @@ CREATE FUNCTION [N&M'S].fn_obtener_nro_orden(@camion_id INT, @taller_id INT) RET
 	BEGIN
 		DECLARE @nro_orden INT
 		SELECT @nro_orden = nro_orden FROM [N&M'S].Orden_de_Trabajo WHERE camion_id = @camion_id AND taller_id = @taller_id
-		RETURN @nro_orden;
+		RETURN @nro_orden
 	END
 GO
 
@@ -538,6 +544,20 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_mecanico(@legajo NVARCHAR(510)) RETURNS IN
 		RETURN @mecanico_id
 	END
 GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Funcion que dado un codigo de material, me devuelve el material_id de la tabla Material que corresponde a ese codigo
+	@parameters: Codigo del producto
+	@return: El id del material
+*/
+CREATE FUNCTION [N&M'S].fn_obtener_id_material(@codigo NVARCHAR(100)) RETURNS INT AS
+	BEGIN
+		DECLARE @material_id INT
+		SELECT @material_id = material_id FROM [N&M'S].Material WHERE codigo = @codigo
+		RETURN @material_id
+	END
+GO
 ---------------------------------------------------
 -- CREACION DE STORED PROCEDURES
 ---------------------------------------------------
@@ -545,9 +565,9 @@ PRINT 'Creando STORED PROCEDURES para la migracion de datos' + CHAR(13)
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_ciudad AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -562,13 +582,14 @@ CREATE PROCEDURE [N&M'S].sp_migrar_ciudad AS
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_recorrido AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT 
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -585,13 +606,14 @@ CREATE PROCEDURE [N&M'S].sp_migrar_recorrido AS
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_taller AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -608,14 +630,15 @@ CREATE PROCEDURE [N&M'S].sp_migrar_taller AS
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState); 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_modelo AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -627,14 +650,15 @@ CREATE PROCEDURE [N&M'S].sp_migrar_modelo AS
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_marca AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -643,15 +667,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_marca AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState) 
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_camion AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)  
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -668,15 +693,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_camion AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_chofer AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -687,15 +713,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_chofer AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_viaje AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -713,15 +740,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_viaje AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -732,15 +760,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT 
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -762,15 +791,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT 
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -788,16 +818,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
-
 CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -812,16 +842,17 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 
 CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX) 
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -841,15 +872,16 @@ CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -871,19 +903,20 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea_x_orden AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_material AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Material(material_id,descripcion,precio)
+			INSERT INTO [N&M'S].Material(codigo,descripcion,precio)
 			SELECT DISTINCT 
 				MATERIAL_COD,
 				MATERIAL_DESCRIPCION,
@@ -893,22 +926,23 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
 CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
-	DECLARE @ErrorMessage NVARCHAR(MAX);  
-	DECLARE @ErrorSeverity INT;  
-	DECLARE @ErrorState INT;
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT; 
+	DECLARE @ErrorState INT
 
 	BEGIN TRY
 		BEGIN TRANSACTION
 			INSERT INTO [N&M'S].Material_x_Tarea(tarea_id,material_id,cantidad)
 			SELECT DISTINCT 
 				TAREA_CODIGO,
-				MATERIAL_COD,
+				[N&M'S].fn_obtener_id_material(MATERIAL_COD),
 				COUNT(*)
 			FROM gd_esquema.Maestra M1
 			WHERE MATERIAL_COD IS NOT NULL AND TAREA_CODIGO IS NOT NULL
@@ -916,11 +950,11 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
 	END CATCH
 GO
-
 ---------------------------------------------------
 -- EJECUCIÓN DE STORED PROCEDURES
 ---------------------------------------------------
@@ -991,7 +1025,7 @@ CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
 SELECT pxv.paquete_id, cantidad_paquete ,v.*
 	FROM [N&M'S].Viaje v
 		JOIN [N&M'S].Paquete_x_Viaje pxv ON pxv.nro_viaje = v.nro_viaje
-	WHERE camion_id = 23  
+	WHERE camion_id = 23 
 
 
 CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM sys.object
@@ -1038,7 +1072,7 @@ SELECT * FROM [N&M'S].Material_x_Tarea
 -- SELECT * FROM sys.sysprocesses WHERE open_tran = 1
 
 BEGIN
-	DECLARE @id_test BIT = 1;
+	DECLARE @id_test BIT = 1
 	IF @id_test = 1
 		BEGIN
 			PRINT 'Corre todo, pero no se carga nada (schema, tablas, sp, etc...)'
@@ -1051,4 +1085,3 @@ BEGIN
 		END
 END
 GO
-
