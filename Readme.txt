@@ -1,0 +1,8 @@
+- Curso: K3521
+- Número de grupo: 18
+-  Nombre y legajo de todos los integrantes:
+	- Garcia, Ignacio – 1673476
+	- Grillo, Matias – 1670530
+	- Garozzo, Marcio – 1680614
+	- Raiter, Micaela - 1678700
+- Email del integrante responsable del grupo: ignaciogarcia@frba.utn.edu.ar
