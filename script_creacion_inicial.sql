@@ -6,8 +6,48 @@ GO
 --------------------------------------------------- 
 -- CHEQUEO DE STORED PROCEDURES
 ---------------------------------------------------
+IF OBJECT_ID('[N&M''S].sp_migrar_camion', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_camion
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_chofer', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_chofer
+GO
+
 IF OBJECT_ID('[N&M''S].sp_migrar_ciudad', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_ciudad
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_marca', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_marca
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_mecanico
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_modelo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_modelo
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete
+GO
+
+IF OBJECT_ID('[N&M''S].sp_migrar_paquete_x_viaje', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_recorrido', 'P') IS NOT NULL
@@ -18,83 +58,18 @@ IF OBJECT_ID('[N&M''S].sp_migrar_taller', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_taller
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_modelo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_modelo
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_marca', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_marca
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_camion', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_camion
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_chofer', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_chofer
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_viaje', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_viaje
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_paquete_x_viaje', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_paquete_x_viaje
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo
-GO
-
 IF OBJECT_ID('[N&M''S].sp_migrar_tarea', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_tarea
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_paquete', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_paquete
-GO
-
-IF OBJECT_ID('[N&M''S].sp_tarea_x_orden', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_mecanico
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_orden_de_trabajo', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_orden_de_trabajo
-GO
-
-IF OBJECT_ID('[N&M''S].sp_migrar_mecanico', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_mecanico
 GO
 
 IF OBJECT_ID('[N&M''S].sp_migrar_tarea_x_orden', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_migrar_tarea_x_orden
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_material', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material
+IF OBJECT_ID('[N&M''S].sp_migrar_viaje', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_viaje
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_material_x_tarea', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_material_x_tarea
-GO
---------------------------------------------------- 
--- CHEQUEO DE VISTAS
----------------------------------------------------
-IF OBJECT_ID('[N&M''S].vw_xxx', 'V') IS NOT NULL
-	DROP VIEW [N&M'S].vw_xxx
-GO
 --------------------------------------------------- 
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
@@ -848,7 +823,6 @@ CREATE PROCEDURE [N&M'S].sp_migrar_tarea AS
 	END CATCH
 GO
 
-
 CREATE PROCEDURE [N&M'S].sp_migrar_mecanico AS
 	DECLARE @ErrorMessage NVARCHAR(MAX) 
 	DECLARE @ErrorSeverity INT
@@ -936,7 +910,7 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT; 
 	DECLARE @ErrorState INT
-
+	
 	BEGIN TRY
 		BEGIN TRANSACTION
 			INSERT INTO [N&M'S].Material_x_Tarea(tarea_id,material_id,cantidad)
@@ -978,147 +952,9 @@ EXEC [N&M'S].sp_migrar_tarea_x_orden
 EXEC [N&M'S].sp_migrar_material
 EXEC [N&M'S].sp_migrar_material_x_tarea
 
----------------------------------------------------
--- CREACION DE VISTAS
----------------------------------------------------
-PRINT 'Creando VISTAS para la migracion de datos' + CHAR(13)
-GO
-
----------------------------------------------------
-/*
-	1. Máximo tiempo fuera de servicio de cada camión por cuatrimestre
-	Se entiende por fuera de servicio cuando el camión está en el taller (tiene
-	una OT) y no se encuentra disponible para un viaje.
-*/
-
--- Tentativo
-CREATE VIEW [N&M'S].vw_fuera_de_servicio_x_cuatrimestre AS 
-	SELECT DISTINCT
-		camion_id 'CAMION',
-		CASE
-			WHEN MONTH(OT.fecha_generada) IN (1,2,3,4,5,6) THEN 'Primero'
-			ELSE 'Segundo'
-		END 'CUATRIMESTRE',
-		(SELECT MAX(DATEDIFF(DAY,OT1.fecha_generada, GETDATE())) FROM [N&M'S].Orden_de_Trabajo OT1 WHERE OT1.camion_id = OT.camion_id) 'MAXIMA CANTIDAD DE DIAS FUERA DE SERVICIO'
-		FROM [N&M'S].Orden_de_Trabajo OT 
-		GROUP BY camion_id, OT.fecha_generada
-GO
-
----------------------------------------------------
-
-/*
-	2. Costo total de mantenimiento por camión, por taller, por cuatrimestre.
-	Se entiende por costo de mantenimiento el costo de materiales + el costo
-	de mano de obra insumido en cada tarea (correctivas y preventivas)
-*/
-
--- Falta, tira error todavia
-CREATE VIEW [N&M'S].vw_costo_de_mantenimiento AS
-	SELECT DISTINCT
-		camion_id,
-		taller_id,
-		(SELECT (MxT.cantidad * MT.precio) + MC.costo_x_hora
-			FROM [N&M'S].Tarea_x_Orden TxO
-				JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = TxO.tarea_id
-				JOIN [N&M'S].Material MT ON MT.material_id = MxT.material_id
-				JOIN [N&M'S].Mecanico MC ON MC.mecanico_id = TxO.mecanico_id
-			WHERE Txo.nro_orden = OT.nro_orden
-			group by MxT.cantidad, MT.precio, MC.costo_x_hora
-		) 'COSTO DE MANTENIMIENTO', -- Debiera dar NULL porque no esta claro en la migracion la cantidad de materiales por cada tarea (no siempr es el mismo y no esta esa columna en la maestra)
-		CASE
-			WHEN MONTH(OT.fecha_generada) IN (1,2,3,4,5,6) THEN 'Primero'
-			ELSE 'Segundo'
-		END 'CUATRIMESTRE'
-		FROM [N&M'S].Orden_de_Trabajo OT 
-		GROUP BY camion_id,taller_id,fecha_generada
-		ORDER BY 1,2
-GO
-
----------------------------------------------------
-/*
-/*
-	3. Desvío promedio de cada tarea x taller
-*/
-
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-/*
-	4. Las 5 tareas que más se realizan por modelo de camión
-*/
-
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-/*
-	5. Los 10 materiales más utilizados por taller
-*/
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-/*
-	6. Facturación total por recorrido por cuatrimestre (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
-*/
-SELECT pxv.paquete_id, cantidad_paquete ,v.*
-	FROM [N&M'S].Viaje v
-		JOIN [N&M'S].Paquete_x_Viaje pxv ON pxv.nro_viaje = v.nro_viaje
-	WHERE camion_id = 23 
-
-
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-/*
-	7. Costo promedio x rango etario de choferes
-*/
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-/*
-	8. Ganancia por camión (Ingresos  Costo de viaje  Costo de mantenimiento)
-		- Ingresos: en función de la cantidad y tipo de paquetes que
-		transporta el camión y el recorrido
-
-		- Costo de viaje: costo del chofer + el costo de combustible.
-		Tomar precio por lt de combustible $100
-
-		- Costo de mantenimiento: costo de materiales + costo de mano de
-		obra
-*/
-CREATE VIEW [N&M'S].vw_xxx AS SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-GO
-
----------------------------------------------------
-
-SELECT * FROM [N&M'S].Ciudad;
-SELECT * FROM [N&M'S].Recorrido;
-SELECT * FROM [N&M'S].Taller;
-SELECT * FROM [N&M'S].Modelo;
-SELECT * FROM [N&M'S].Marca;
-SELECT * FROM [N&M'S].Viaje;
-SELECT * FROM [N&M'S].Camion;
-SELECT * FROM [N&M'S].Paquete;
-SELECT * FROM [N&M'S].Paquete_x_Viaje
-SELECT * FROM [N&M'S].Orden_de_Trabajo
-SELECT * FROM [N&M'S].Tarea
-SELECT * FROM [N&M'S].Mecanico
-SELECT * FROM [N&M'S].Tarea_x_Orden
-SELECT * FROM [N&M'S].Material
-SELECT * FROM [N&M'S].Material_x_Tarea
-
-*/
-
--- Se borrara despues
--- Chequear que no queden transacciones abiertas
--- SELECT * FROM sys.sysprocesses WHERE open_tran = 1
-
 BEGIN
-	DECLARE @id_test BIT = 0
+	DECLARE @id_test BIT = 1
+
 	IF @id_test = 1
 		BEGIN
 			PRINT 'Corre todo, pero no se carga nada (schema, tablas, sp, etc...)'
