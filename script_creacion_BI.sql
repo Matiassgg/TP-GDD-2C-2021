@@ -538,16 +538,17 @@ CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
 GO
 
 CREATE VIEW [N&M'S].vw_bi_Materiales_x_taller AS
-	SELECT TOP 10 bt.nombre 'taller', bm.descripcion 'material', cantidad_material_utilizado
+	SELECT bm.descripcion 'material', bt.nombre 'taller', cantidad_material_utilizado
 		FROM [N&M'S].bi_Materiales_x_taller bmt
 			INNER JOIN [N&M'S].bi_Taller bt ON bt.taller_id = bmt.taller_id
 			INNER JOIN [N&M'S].bi_Material bm ON bm.material_id = bmt.material_id
-GO
-
+		WHERE bm.material_id IN (SELECT TOP 10 material_id FROM [N&M'S].bi_Materiales_x_taller bmt2 WHERE bmt2.taller_id = bmt.taller_id ORDER BY cantidad_material_utilizado DESC)
 
 -- vista 6° ...
 -- vista 7° ...
 -- vista 8° ...
+
+GO
 
 /*
 
@@ -582,7 +583,7 @@ SELECT * FROM [N&M'S].vw_bi_Materiales_x_taller
 -- SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'N&M''S'
 
 BEGIN
-	DECLARE @id_test BIT = 1
+	DECLARE @id_test BIT = 0
 
 	IF @id_test = 1
 		BEGIN
