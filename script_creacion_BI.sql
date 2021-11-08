@@ -8,7 +8,7 @@ IF OBJECT_ID('[N&M''S].sp_cargar_bi_Tiempo', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Tiempo
 GO
 
-IF OBJECT_ID('[N&M''S].sp_cargar_bi_edad', 'P') IS NOT NULL
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Edad', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Edad
 GO
 
@@ -16,16 +16,44 @@ IF OBJECT_ID('[N&M''S].sp_cargar_bi_Camion', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Camion
 GO
 
-IF OBJECT_ID('[N&M''S].sp_cargar_bi_edad', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_cargar_bi_Edad
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Modelo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Modelo
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Tarea
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Taller', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Taller
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Material', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Material
 GO
 
 IF OBJECT_ID('[N&M''S].sp_cargar_bi_Orden_de_Trabajo', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo
 GO
 
-IF OBJECT_ID('[N&M''S].sp_cargar_bi_tiempo_fuera_servicio', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_cargar_bi_tiempo_fuera_servicio
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Tiempo_fuera_servicio', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Mantenimiento_camiones', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Mantenimiento_camiones
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Desvio_taller_x_tarea', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Tareas_x_modelo', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Tareas_x_modelo
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Materiales_x_taller', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller
 GO
 
 
@@ -33,46 +61,81 @@ GO
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
 IF OBJECT_ID('[N&M''S].fn_obtener_id_tiempo') IS NOT NULL
-	DROP FUNCTION [N&M''S].fn_obtener_id_tiempo
+	DROP FUNCTION [N&M'S].fn_obtener_id_tiempo
 GO
 
 IF OBJECT_ID('[N&M''S].fn_obtener_id_rango_edad') IS NOT NULL
-	DROP FUNCTION [N&M''S].fn_obtener_id_rango_edad
+	DROP FUNCTION [N&M'S].fn_obtener_id_rango_edad
 GO
-
-
 
 --------------------------------------------------- 
 -- CHEQUEO DE VISTAS DEL MODELO BI
 ---------------------------------------------------
-IF OBJECT_ID('[N&M''S].vw_xxx', 'V') IS NOT NULL
-	DROP VIEW [N&M'S].vw_xxx
+IF OBJECT_ID('[N&M''S].vw_max_tiempo_fuera_de_servicio', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio
 GO
+
+-- 2° vista ...
+-- 3° vista ...
+
+IF OBJECT_ID('[N&M''S].vw_tareas_x_modelo', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_tareas_x_modelo
+GO
+
+IF OBJECT_ID('[N&M''S].vw_bi_Materiales_x_taller', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
+GO
+
+-- 6° vista ...
+-- 7° vista ...
+-- 8° vista ...
 
 --------------------------------------------------- 
 -- CHEQUEO DE TABLAS DEL MODELO BI
 ---------------------------------------------------
+IF OBJECT_ID('[N&M''S].bi_Tiempo_fuera_servicio', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tiempo_fuera_servicio
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Tareas_x_modelo', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tareas_x_modelo
+GO
+
 IF OBJECT_ID('[N&M''S].bi_Tiempo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tiempo
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Camion', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Camion
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Orden_de_Trabajo', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Orden_de_Trabajo
 GO
 
 IF OBJECT_ID('[N&M''S].bi_Edad', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Edad
 GO
 
-IF OBJECT_ID('[N&M''S].bi_Camion', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Edad
+IF OBJECT_ID('[N&M''S].bi_Modelo', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Modelo
 GO
 
-IF OBJECT_ID('[N&M''S].bi_Orden_de_Trabajo', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Edad
+IF OBJECT_ID('[N&M''S].bi_Materiales_x_taller', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Materiales_x_taller
 GO
 
-IF OBJECT_ID('[N&M''S].bi_tiempo_fuera_servicio', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Edad
+IF OBJECT_ID('[N&M''S].bi_Taller', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Taller
 GO
 
+IF OBJECT_ID('[N&M''S].bi_Material', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Material
+GO
 
+IF OBJECT_ID('[N&M''S].bi_Tarea', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tarea
+GO
 
 BEGIN TRANSACTION
 --------------------------------------------------- 
@@ -100,21 +163,71 @@ CREATE TABLE [N&M'S].bi_Camion (
 	fecha_alta DATETIME2
 )
 
--- Eventualmente si se necesitan mas campos se agregaran? (lo mismo para todas las tablas)
 CREATE TABLE [N&M'S].bi_Orden_de_Trabajo (
 	nro_orden INT PRIMARY KEY,
+	camion_id INT,
 	fecha_generada DATETIME2,
 	estado NVARCHAR(510),
 )
 
--- TABLAS DE HECHOS
-CREATE TABLE [N&M'S].bi_tiempo_fuera_servicio (
-	-- Se puede vincular el camion id en el sp para esta tabla si se chequea que ese camion id esta en la tabla de OT (tiene una OT asignada)
-	camion_id INT REFERENCES [N&M'S].bi_Camion(camion_id),
-	tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id), -- este es solo el cuatri
-	tiempo_fuera_de_servicio INT NOT NULL, -- tiempo en dias, meses, semanas, etc. fuera de servicio (seria en dias creo)
-	PRIMARY KEY (camion_id, tiempo_id),
+CREATE TABLE [N&M'S].bi_Modelo (
+	modelo_id INT PRIMARY KEY,
+	descripcion NVARCHAR(510) NOT NULL,
 )
+
+CREATE TABLE [N&M'S].bi_Tarea (
+	tarea_id INT PRIMARY KEY,
+	tipo_tarea NVARCHAR(510),
+	nombre NVARCHAR(510),
+	tiempo_estimado INT
+)
+
+CREATE TABLE [N&M'S].bi_Taller (
+	taller_id INT PRIMARY KEY,
+	ciudad VARCHAR(510) NOT NULL,
+	nombre NVARCHAR(510) NOT NULL,
+	direccion NVARCHAR(510),
+	telefono DECIMAL(18,0),
+	mail NVARCHAR(510)
+)
+
+CREATE TABLE [N&M'S].bi_Material (
+	material_id INT PRIMARY KEY,
+	descripcion NVARCHAR(510),
+	precio DECIMAL(18,2)
+)
+
+-- TABLAS DE HECHOS
+CREATE TABLE [N&M'S].bi_Tiempo_fuera_servicio (
+	camion_id INT REFERENCES [N&M'S].bi_Camion(camion_id),
+	tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
+	nro_orden INT REFERENCES [N&M'S].bi_Orden_de_Trabajo(nro_orden),
+	tiempo_fuera_de_servicio INT NOT NULL,
+	PRIMARY KEY (camion_id, tiempo_id, nro_orden)
+)
+
+-- bi para 2° vista ...
+-- bi para 3° vista ...
+
+
+CREATE TABLE [N&M'S].bi_Tareas_x_modelo (
+	modelo_id INT REFERENCES [N&M'S].bi_Modelo(modelo_id),
+	tarea_id INT REFERENCES [N&M'S].bi_Tarea(tarea_id),
+	cantidad_veces_realizadas INT NOT NULL,
+	PRIMARY KEY (modelo_id, tarea_id)
+)
+
+CREATE TABLE [N&M'S].bi_Materiales_x_taller (
+	taller_id INT REFERENCES [N&M'S].bi_taller(taller_id),
+	material_id INT REFERENCES [N&M'S].bi_material(material_id),
+	tarea_id INT REFERENCES [N&M'S].bi_tarea(tarea_id),
+	cantidad_material_utilizado INT
+	PRIMARY KEY (taller_id, material_id, tarea_id)
+)
+
+-- bi para 6° vista ...
+-- bi para 7° vista ...
+-- bi para 8° vista ...
 GO
 
 ---------------------------------------------------
@@ -138,7 +251,6 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_tiempo(@fecha DATETIME2) RETURNS INT AS
 		RETURN @id_tiempo
 	END
 GO
-
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Funcion que dada una fecha de nacimiento, devuelve un VARCHAR() informando el rango de edad de la persona
@@ -166,6 +278,9 @@ GO
 --------------------------------------------------- 
 -- CREACION DE STORED PROCEDURES DEL MODELO BI
 ---------------------------------------------------
+
+-- Tablas de dimension
+
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -224,10 +339,8 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo AS
 
 	BEGIN TRY
 		BEGIN TRANSACTION
-			
-			INSERT INTO [N&M'S].bi_Orden_de_Trabajo (nro_orden,fecha_generada,estado)
-				SELECT DISTINCT nro_orden, fecha_generada, estado FROM [N&M'S].Orden_de_Trabajo
-
+			INSERT INTO [N&M'S].bi_Orden_de_Trabajo (nro_orden,camion_id,fecha_generada,estado)
+				SELECT nro_orden, camion_id, fecha_generada, estado FROM [N&M'S].Orden_de_Trabajo
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -237,36 +350,53 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo AS
 	END CATCH
 GO
 
--- (REVISAR) 
-CREATE PROCEDURE [N&M'S].sp_cargar_bi_tiempo_fuera_servicio AS
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Modelo AS
+	BEGIN
+		INSERT INTO [N&M'S].bi_Modelo (modelo_id,descripcion) 
+			SELECT modelo_id, descripcion FROM [N&M'S].Modelo
+	END
+GO
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tarea AS
+	BEGIN
+		INSERT INTO [N&M'S].bi_Tarea (tarea_id, tipo_tarea, nombre, tiempo_estimado)
+			SELECT * FROM [N&M'S].Tarea
+	END
+GO
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Taller AS
+	BEGIN
+		INSERT INTO [N&M'S].bi_Taller (taller_id,ciudad,nombre,direccion,telefono,mail)
+			SELECT t.taller_id, c.nombre, t.nombre, t.direccion, t.telefono, t.mail 
+				FROM [N&M'S].Taller t
+					INNER JOIN [N&M'S].Ciudad C ON t.ciudad_id = c.ciudad_id
+	END
+GO
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Material AS
+	BEGIN
+		INSERT INTO [N&M'S].bi_Material(material_id,descripcion,precio) SELECT material_id, descripcion, precio FROM [N&M'S].Material
+	END
+GO
+
+
+-- Migracion de tablas de hechos
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
 	DECLARE @ErrorState INT
 
 	BEGIN TRY
-
-		INSERT INTO [N&M'S].bi_tiempo_fuera_servicio (camion_id, tiempo_id, tiempo_fuera_de_servicio)
-
+		INSERT INTO [N&M'S].bi_tiempo_fuera_servicio (camion_id, tiempo_id, nro_orden, tiempo_fuera_de_servicio)
 			SELECT DISTINCT
 				c.camion_id,
-				[N&M'S].fn_obtener_id_tiempo(TxO.fecha_inicio_real), -- asumo que la tareas no tardan en completarse en mas de un cuatrimestre
-				-- TIEMPO FUERA DE SERVICIO DE ESE CAMION CON ESA OT EN UN CUATRI ???? (SERA? ni idea)
-				DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real) -- usar tiempo_ejecucion??? (siempre da 2)
+				[N&M'S].fn_obtener_id_tiempo(TxO.fecha_inicio_real),
+				OT.nro_orden,
+				DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real)
 				FROM [N&M'S].Camion C
 					INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = C.camion_id
 					INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-				-- "y no se encuentra disponible para un viaje." Como afecta ?
-/*
-			select C.camion_id, fecha_alta, fecha_generada FROM [N&M'S].Camion C
-					INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = c.camion_id
-				order by 1, 2
-
-			SELECT * FROM [N&M'S].Tarea_x_Orden WHERE nro_orden = 1
-			SELECT id_tarea_x_nro_orden, nro_orden, tarea_id, mecanico_id, (SELECT TOP 1 TxO.fecha_fin_real FROM [N&M'S].Tarea_x_Orden TxO WHERE TxO.nro_orden = 1 ORDER BY TxO.fecha_fin_real DESC)
-				FROM [N&M'S].Tarea_x_Orden 
-				WHERE nro_orden = 1 
-				GROUP BY id_tarea_x_nro_orden, nro_orden, tarea_id, mecanico_id
-*/
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
@@ -275,6 +405,87 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_tiempo_fuera_servicio AS
 	END CATCH
 GO
 
+/*
+-- TODO :: Para 2° vista
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Mantenimiento_camiones AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_Mantenimiento_camiones (camion_id, tiempo_id, taller_id, ....)
+
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+
+-- TODO :: Para 3° vista
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_Desvio_taller_x_tarea (taller_id, tarea_id, ....)
+
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+*/
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tareas_x_modelo AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_Tareas_x_modelo (modelo_id,tarea_id,cantidad_veces_realizadas)
+			SELECT 
+				bm.modelo_id, TxO.tarea_id, COUNT(tarea_id)
+			FROM [N&M'S].bi_Camion bc
+				INNER JOIN [N&M'S].Modelo bm ON bc.modelo = bm.descripcion
+				INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = bc.camion_id
+				INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
+			GROUP BY bm.modelo_id, TxO.tarea_id
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+
+-- Como Material_x_Tarea tiene NULL en cantidad para cada tarea, este bi no va a devolver nada util x ahora
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_Materiales_x_taller (taller_id,material_id,tarea_id,cantidad_material_utilizado)
+			SELECT ot.taller_id, material_id, t.tarea_id, SUM(ISNULL(MxT.cantidad,0))
+				FROM [N&M'S].Orden_de_Trabajo OT 
+					INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
+					INNER JOIN [N&M'S].Tarea T ON t.tarea_id = TxO.tarea_id
+					INNER JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = t.tarea_id
+				GROUP BY ot.taller_id, material_id, t.tarea_id
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
 ---------------------------------------------------
 -- EJECUCIÓN DE STORED PROCEDURES
 ---------------------------------------------------
@@ -286,33 +497,89 @@ GO
 EXEC [N&M'S].sp_cargar_bi_Tiempo
 EXEC [N&M'S].sp_cargar_bi_Edad
 EXEC [N&M'S].sp_cargar_bi_Camion
+EXEC [N&M'S].sp_cargar_bi_Modelo
+EXEC [N&M'S].sp_cargar_bi_Tarea
+EXEC [N&M'S].sp_cargar_bi_Taller
+EXEC [N&M'S].sp_cargar_bi_Material
 EXEC [N&M'S].sp_cargar_bi_Orden_de_Trabajo
-EXEC [N&M'S].sp_cargar_bi_tiempo_fuera_servicio
+
+-- Tablas de hechos
+EXEC [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio
+-- EXEC [N&M'S].sp_cargar_bi_Mantenimiento_camiones
+-- EXEC [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
+EXEC [N&M'S].sp_cargar_bi_Tareas_x_modelo
+EXEC [N&M'S].sp_cargar_bi_Materiales_x_taller
 -- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
 -- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
 -- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
+
+GO
+--------------------------------------------------- 
+-- CREACION DE VISTAS
+---------------------------------------------------
+
+CREATE VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio AS
+	SELECT bc.camion_id, bt.cuatrimestre, MAX(tiempo_fuera_de_servicio) 'maximo tiempo fuera de servicio'
+		FROM [N&M'S].bi_Tiempo_fuera_servicio bf
+			INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = bf.tiempo_id
+			INNER JOIN [N&M'S].bi_Camion bc ON bc.camion_id = bf.camion_id
+		GROUP BY bc.camion_id, bt.cuatrimestre
+GO
+
+-- vista 2° ...
+-- vista 3° ...
+
+CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
+	SELECT DISTINCT TOP 5 bm.descripcion 'modelo', bt.nombre 'tarea', btm.cantidad_veces_realizadas
+		FROM [N&M'S].bi_Tareas_x_modelo btm
+			INNER JOIN [N&M'S].bi_Modelo bm ON bm.modelo_id = btm.modelo_id
+			INNER JOIN [N&M'S].bi_Tarea bt ON bt.tarea_id = btm.tarea_id
+		ORDER BY cantidad_veces_realizadas DESC
+GO
+
+CREATE VIEW [N&M'S].vw_bi_Materiales_x_taller AS
+	SELECT TOP 10 bt.nombre 'taller', bm.descripcion 'material', cantidad_material_utilizado
+		FROM [N&M'S].bi_Materiales_x_taller bmt
+			INNER JOIN [N&M'S].bi_Taller bt ON bt.taller_id = bmt.taller_id
+			INNER JOIN [N&M'S].bi_Material bm ON bm.material_id = bmt.material_id
+GO
+
+
+-- vista 6° ...
+-- vista 7° ...
+-- vista 8° ...
 
 /*
 
+-- TABLAS
 SELECT * FROM [N&M'S].bi_Tiempo
 SELECT * FROM [N&M'S].bi_Edad
 SELECT * FROM [N&M'S].bi_Camion
 SELECT * FROM [N&M'S].bi_Orden_de_Trabajo
 SELECT * FROM [N&M'S].bi_tiempo_fuera_servicio
 
+-- VISTAS
+
+-- 1
+SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
+
+-- 2
+-- 3
+
+-- 4
+SELECT * FROM [N&M'S].vw_tareas_x_modelo
+
+-- 5
+SELECT * FROM [N&M'S].vw_bi_Materiales_x_taller
+
+-- 6
+-- 7
+-- 8
+
 */
 
-SELECT * FROM [N&M'S].bi_tiempo_fuera_servicio
-
---SELECT @@TRANCOUNT
+-- SELECT @@TRANCOUNT
+-- SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'N&M''S'
 
 BEGIN
 	DECLARE @id_test BIT = 1
@@ -329,4 +596,3 @@ BEGIN
 		END
 END
 GO
-
