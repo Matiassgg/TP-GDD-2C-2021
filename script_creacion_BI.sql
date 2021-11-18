@@ -68,6 +68,14 @@ IF OBJECT_ID('[N&M''S].fn_obtener_id_rango_edad') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_obtener_id_rango_edad
 GO
 
+IF OBJECT_ID('[N&M''S].fn_calcular_costo_mantenimiento') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_calcular_costo_mantenimiento
+GO
+
+IF OBJECT_ID('[N&M''S].fn_calcular_desvio_tarea_x_taller') IS NOT NULL
+	DROP FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller
+GO
+
 --------------------------------------------------- 
 -- CHEQUEO DE VISTAS DEL MODELO BI
 ---------------------------------------------------
@@ -75,8 +83,13 @@ IF OBJECT_ID('[N&M''S].vw_max_tiempo_fuera_de_servicio', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio
 GO
 
--- 2° vista ...
--- 3° vista ...
+IF OBJECT_ID('[N&M''S].vw_costo_total_mantenimiento_x_camion', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_costo_total_mantenimiento_x_camion
+GO
+
+IF OBJECT_ID('[N&M''S].vw_desvio_promedio_tarea_x_taller', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_desvio_promedio_tarea_x_taller
+GO
 
 IF OBJECT_ID('[N&M''S].vw_tareas_x_modelo', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_tareas_x_modelo
@@ -99,6 +112,14 @@ GO
 
 IF OBJECT_ID('[N&M''S].bi_Tareas_x_modelo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tareas_x_modelo
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Mantenimiento_camiones', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_mantenimiento_camiones
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Desvio_x_taller', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_desvio_x_taller
 GO
 
 IF OBJECT_ID('[N&M''S].bi_Tiempo', 'U') IS NOT NULL
@@ -206,9 +227,20 @@ CREATE TABLE [N&M'S].bi_Tiempo_fuera_servicio (
 	PRIMARY KEY (camion_id, tiempo_id, nro_orden)
 )
 
--- bi para 2° vista ...
--- bi para 3° vista ...
+CREATE TABLE [N&M'S].bi_Mantenimiento_camiones (
+	camion_id INT REFERENCES [N&M'S].bi_Camion(camion_id),
+	tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
+	taller_id INT REFERENCES [N&M'S].bi_taller(taller_id),
+	costo_mantenimiento DECIMAL(18,2) NOT NULL
+	PRIMARY KEY (camion_id, tiempo_id, taller_id)
+)
 
+CREATE TABLE [N&M'S].bi_Desvio_x_taller (
+	taller_id INT REFERENCES [N&M'S].bi_taller(taller_id),
+	tarea_id INT REFERENCES [N&M'S].bi_tarea(tarea_id),
+	desvio DECIMAL(18,2) NOT NULL
+	PRIMARY KEY (taller_id, tarea_id, desvio)
+)
 
 CREATE TABLE [N&M'S].bi_Tareas_x_modelo (
 	modelo_id INT REFERENCES [N&M'S].bi_Modelo(modelo_id),
@@ -233,6 +265,7 @@ GO
 ---------------------------------------------------
 -- CREACION DE FUNCIONES
 ---------------------------------------------------
+
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Funcion que dada una fecha, devuelve el id correspondiente para los datos de combinados de cuatrimestre-año segun la fecha
@@ -251,6 +284,7 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_tiempo(@fecha DATETIME2) RETURNS INT AS
 		RETURN @id_tiempo
 	END
 GO
+
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Funcion que dada una fecha de nacimiento, devuelve un VARCHAR() informando el rango de edad de la persona
@@ -273,6 +307,70 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT A
 
 		RETURN @edad_id
 	END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: xxxxx
+	@parameters: xxxxx
+	@return: xxxxx
+*/
+CREATE FUNCTION [N&M'S].fn_calcular_costo_mantenimiento(@camion_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
+BEGIN
+	DECLARE @costo_MO DECIMAL(18,2), @costo_materiales_x_tarea DECIMAL(18,2)
+
+	-- Costo materiales x tarea
+	SELECT
+		@costo_materiales_x_tarea = SUM(ISNULL(M.precio,0)) -- si dejo solo M.precio da ok, el algoritmo da, aunque x falta de datos en cantidad, siempre da 0
+		FROM [N&M'S].Material M
+			INNER JOIN [N&M'S].Material_x_Tarea MxT ON M.material_id = MxT.material_id
+		WHERE tarea_id IN (SELECT DISTINCT 
+								TxO.tarea_id
+								FROM [N&M'S].Orden_de_Trabajo OT
+									INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden 
+								WHERE OT.camion_id = @camion_id AND OT.taller_id = @taller_id) -- Tareas que se hizo ese camion en ese taller
+		GROUP BY tarea_id
+
+	-- Costo MO
+	SELECT 
+		@costo_MO = SUM((M.costo_x_hora * 8) * TxO.tiempo_ejecucion)  -- costo total de mano de obra x camion, tiempo de ejecucion siempre es 2
+		FROM [N&M'S].Orden_de_Trabajo OT
+			INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden 
+			INNER JOIN [N&M'S].Mecanico M ON m.mecanico_id = TxO.mecanico_id
+		WHERE OT.camion_id = @camion_id AND OT.taller_id = @taller_id -- 1 camion es atendido en un solo taller x varios mecanicos
+		GROUP BY OT.camion_id
+
+	RETURN @costo_MO + @costo_materiales_x_tarea
+END
+GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: xxxxx
+	@parameters: xxxxx
+	@return: xxxxx
+*/
+CREATE FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller(@tarea_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
+BEGIN
+	DECLARE @desvio DECIMAL(18,2)
+
+	
+	/*
+		El desvío se refiere a la diferencia entre la planificación y la ejecución de cada tarea.
+		Pueden tomar como desvío la diferencia entre fechas o la diferencia entre tiempos
+	*/
+
+	SELECT @desvio = SUM(DATEDIFF(DAY, fecha_inicio_planificada, fecha_inicio_real))
+			FROM [N&M'S].Tarea_x_Orden TxO
+				INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden 
+			WHERE tarea_id = @tarea_id AND taller_id = @taller_id
+			GROUP BY taller_id, tarea_id
+
+	IF @desvio IS NULL
+		SET @desvio = 0
+	
+	RETURN @desvio
+END
 GO
 
 --------------------------------------------------- 
@@ -299,7 +397,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()  
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
@@ -326,7 +424,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Camion AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
@@ -344,7 +442,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo AS
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
@@ -399,14 +497,11 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio AS
 					INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
 GO
-
-/*
--- TODO :: Para 2° vista
 
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Mantenimiento_camiones AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
@@ -414,17 +509,20 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Mantenimiento_camiones AS
 	DECLARE @ErrorState INT
 
 	BEGIN TRY
-		INSERT INTO [N&M'S].bi_Mantenimiento_camiones (camion_id, tiempo_id, taller_id, ....)
-
+		INSERT INTO [N&M'S].bi_Mantenimiento_camiones(camion_id, taller_id, tiempo_id, costo_mantenimiento)
+			SELECT OT.camion_id, OT.taller_id,
+					[N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
+					[N&M'S].fn_calcular_costo_mantenimiento(camion_id,taller_id)
+			FROM [N&M'S].Orden_de_Trabajo OT
+				INNER JOIN [N&M'S].Tarea_x_Orden TxO ON OT.nro_orden = TxO.nro_orden
+			GROUP BY OT.camion_id, OT.taller_id, OT.fecha_generada
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
 GO
-
--- TODO :: Para 3° vista
 
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
@@ -432,16 +530,20 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea AS
 	DECLARE @ErrorState INT
 
 	BEGIN TRY
-		INSERT INTO [N&M'S].bi_Desvio_taller_x_tarea (taller_id, tarea_id, ....)
-
+		INSERT INTO [N&M'S].bi_Desvio_x_taller (taller_id, tarea_id, desvio)
+			SELECT DISTINCT 
+				OT.taller_id, 
+				TxO.tarea_id, 
+				[N&M'S].fn_calcular_desvio_tarea_x_taller(OT.taller_id, TxO.tarea_id)
+				FROM [N&M'S].Orden_de_Trabajo OT
+					INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
 GO
-*/
 
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tareas_x_modelo AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
@@ -459,13 +561,12 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tareas_x_modelo AS
 			GROUP BY bm.modelo_id, TxO.tarea_id
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
 GO
 
--- Como Material_x_Tarea tiene NULL en cantidad para cada tarea, este bi no va a devolver nada util x ahora
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -481,7 +582,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
 				GROUP BY ot.taller_id, material_id, t.tarea_id
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE();  
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
@@ -503,10 +604,11 @@ EXEC [N&M'S].sp_cargar_bi_Taller
 EXEC [N&M'S].sp_cargar_bi_Material
 EXEC [N&M'S].sp_cargar_bi_Orden_de_Trabajo
 
+
 -- Tablas de hechos
 EXEC [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio
--- EXEC [N&M'S].sp_cargar_bi_Mantenimiento_camiones
--- EXEC [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
+EXEC [N&M'S].sp_cargar_bi_Mantenimiento_camiones
+EXEC [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
 EXEC [N&M'S].sp_cargar_bi_Tareas_x_modelo
 EXEC [N&M'S].sp_cargar_bi_Materiales_x_taller
 -- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
@@ -526,8 +628,22 @@ CREATE VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio AS
 		GROUP BY bc.camion_id, bt.cuatrimestre
 GO
 
--- vista 2° ...
--- vista 3° ...
+
+CREATE VIEW [N&M'S].vw_costo_total_mantenimiento_x_camion AS
+	SELECT bc.camion_id, ta.nombre, bt.cuatrimestre, bmc.costo_mantenimiento
+		FROM [N&M'S].bi_mantenimiento_camiones bmc
+			INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = bmc.tiempo_id
+			INNER JOIN [N&M'S].bi_Camion bc ON bc.camion_id = bmc.camion_id
+			INNER JOIN [N&M'S].bi_Taller ta ON ta.taller_id = bmc.taller_id
+GO
+
+CREATE VIEW [N&M'S].vw_desvio_promedio_tarea_x_taller AS
+	SELECT dxt.taller_id, dxt.tarea_id, AVG(dxt.desvio) 'Desvio promedio'
+		FROM [N&M'S].bi_Desvio_x_taller dxt
+			INNER JOIN [N&M'S].bi_Taller tll ON dxt.taller_id = tll.taller_id
+			INNER JOIN [N&M'S].bi_Tarea tr ON dxt.tarea_id = tr.tarea_id
+		GROUP BY dxt.taller_id, dxt.tarea_id
+GO
 
 CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
 	SELECT DISTINCT TOP 5 bm.descripcion 'modelo', bt.nombre 'tarea', btm.cantidad_veces_realizadas
@@ -565,7 +681,10 @@ SELECT * FROM [N&M'S].bi_tiempo_fuera_servicio
 SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
 
 -- 2
+SELECT * FROM [N&M'S].vw_costo_total_mantenimiento_x_camion
+
 -- 3
+SELECT * FROM [N&M'S].vw_desvio_promedio_tarea_x_taller
 
 -- 4
 SELECT * FROM [N&M'S].vw_tareas_x_modelo
@@ -597,3 +716,4 @@ BEGIN
 		END
 END
 GO
+
