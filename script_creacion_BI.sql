@@ -56,7 +56,19 @@ IF OBJECT_ID('[N&M''S].sp_cargar_bi_Materiales_x_taller', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller
 GO
 
+/*
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_facturacion_x_cuatrimestre', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre
+GO
 
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_costo_x_rango_etario', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_costo_x_rango_etario
+GO
+
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_ganancia_camiones', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_ganancia_camiones
+GO
+*/
 --------------------------------------------------- 
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
@@ -99,13 +111,24 @@ IF OBJECT_ID('[N&M''S].vw_bi_Materiales_x_taller', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
 GO
 
--- 6° vista ...
--- 7° vista ...
--- 8° vista ...
+/*
+IF OBJECT_ID('[N&M''S].vw_bi_facturacion_x_cuatrimestre', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_bi_facturacion_x_cuatrimestre
+GO
+
+IF OBJECT_ID('[N&M''S].vw_bi_costo_x_rango_etario', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
+GO
+
+IF OBJECT_ID('[N&M''S].vw_bi_ganancia_camiones', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
+GO
+*/
 
 --------------------------------------------------- 
 -- CHEQUEO DE TABLAS DEL MODELO BI
 ---------------------------------------------------
+--Tablas de hechos
 IF OBJECT_ID('[N&M''S].bi_Tiempo_fuera_servicio', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tiempo_fuera_servicio
 GO
@@ -121,6 +144,21 @@ GO
 IF OBJECT_ID('[N&M''S].bi_Desvio_x_taller', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_desvio_x_taller
 GO
+
+IF OBJECT_ID('[N&M''S].bi_Tareas_x_modelo', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tareas_x_modelo
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Materiales_x_taller', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Materiales_x_taller
+GO
+
+IF OBJECT_ID('[N&M''S].bi_facturacion_x_cuatrimestre', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_facturacion_x_cuatrimestre
+GO
+
+--Tablas de dimension
+
 
 IF OBJECT_ID('[N&M''S].bi_Tiempo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tiempo
@@ -142,10 +180,6 @@ IF OBJECT_ID('[N&M''S].bi_Modelo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Modelo
 GO
 
-IF OBJECT_ID('[N&M''S].bi_Materiales_x_taller', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Materiales_x_taller
-GO
-
 IF OBJECT_ID('[N&M''S].bi_Taller', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Taller
 GO
@@ -157,6 +191,19 @@ GO
 IF OBJECT_ID('[N&M''S].bi_Tarea', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tarea
 GO
+
+IF OBJECT_ID('[N&M''S].bi_Recorrido', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Recorrido
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Viaje', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Viaje
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Paquete', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Paquete
+GO
+
 
 BEGIN TRANSACTION
 --------------------------------------------------- 
@@ -218,6 +265,30 @@ CREATE TABLE [N&M'S].bi_Material (
 	precio DECIMAL(18,2)
 )
 
+CREATE TABLE [N&M'S].bi_Recorrido (
+	recorrido_id INT PRIMARY KEY IDENTITY(1,1),
+	ciudad_origen VARCHAR(510), 
+	ciudad_destino VARCHAR(510),
+	km_recorridos INT,
+	precio_recorrido decimal(18,2)
+)
+
+CREATE TABLE [N&M'S].bi_Viaje(
+	nro_viaje INT PRIMARY KEY,
+	camion_id INT,
+	chofer_id INT,
+	recorrido_id INT,
+	fecha_inicio datetime2(7),
+	fecha_fin datetime2(7),
+	consumo_combustible decimal(18,2)
+)
+
+CREATE TABLE [N&M'S].bi_Paquete(
+	paquete_id int primary key,
+	descripcion varchar(510),
+	precio  decimal(18,2)
+)
+
 -- TABLAS DE HECHOS
 CREATE TABLE [N&M'S].bi_Tiempo_fuera_servicio (
 	camion_id INT REFERENCES [N&M'S].bi_Camion(camion_id),
@@ -257,7 +328,15 @@ CREATE TABLE [N&M'S].bi_Materiales_x_taller (
 	PRIMARY KEY (taller_id, material_id, tarea_id)
 )
 
--- bi para 6° vista ...
+CREATE TABLE [N&M'S].bi_facturacion_x_cuatrimestre(
+	recorrido_id INT REFERENCES [N&M'S].bi_Recorrido(recorrido_id),
+	tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
+	nro_viaje INT REFERENCES [N&M'S].bi_Viaje(nro_viaje),
+	paquete_id INT REFERENCES [N&M'S].bi_Paquete(paquete_id),
+	camion_id INT REFERENCES [N&M'S].bi_Camion(camion_id),
+	cantidad_paquetes int,
+	facturacion_total decimal(18,2)
+)
 -- bi para 7° vista ...
 -- bi para 8° vista ...
 GO
@@ -588,11 +667,59 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
 	END CATCH
 GO
 
+/*
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
 
--- sp 6° ...
--- sp 7° ...
--- sp 8° ...
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_facturacion_x_cuatrimestre (recorrido_id,tiempo_id,nro_viaje,paquete_id,camion_id, cantidad_paquete, facturacion_total)
+			SELECT r.recorrido_id, t.tiempo_id, v.nro_viaje, p.paquete_id, c.camion_id
 
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_costo_x_rango_etario AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_costo_x_rango_etario (...)
+			SELECT ... FROM
+
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_ganancia_camiones AS
+	DECLARE @ErrorMessage NVARCHAR(MAX)
+	DECLARE @ErrorSeverity INT
+	DECLARE @ErrorState INT
+
+	BEGIN TRY
+		INSERT INTO [N&M'S].bi_ganancia_camiones (...)
+			SELECT ... FROM
+
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+		ROLLBACK TRANSACTION
+	END CATCH
+GO
+
+*/
 
 
 ---------------------------------------------------
@@ -619,9 +746,9 @@ EXEC [N&M'S].sp_cargar_bi_Mantenimiento_camiones
 EXEC [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
 EXEC [N&M'S].sp_cargar_bi_Tareas_x_modelo
 EXEC [N&M'S].sp_cargar_bi_Materiales_x_taller
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
--- EXEC [N&M'S].sp_cargar_bi_XXXXXXXXXXX
+-- EXEC [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre
+-- EXEC [N&M'S].sp_cargar_bi_costo_x_rango_etario
+-- EXEC [N&M'S].sp_cargar_bi_ganancia_camiones
 
 GO
 --------------------------------------------------- 
@@ -704,8 +831,11 @@ SELECT * FROM [N&M'S].vw_tareas_x_modelo
 SELECT * FROM [N&M'S].vw_bi_Materiales_x_taller
 
 -- 6
+SELECT * FROM [N&M'S].vw_facturacion_x_cuatrimestre
 -- 7
+SELECT * FROM [N&M'S].vw_costo_x_rango_etario
 -- 8
+SELECT * FROM [N&M'S].vw_ganancia_camiones
 
 */
 
