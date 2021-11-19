@@ -107,21 +107,21 @@ IF OBJECT_ID('[N&M''S].vw_tareas_x_modelo', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_tareas_x_modelo
 GO
 
-IF OBJECT_ID('[N&M''S].vw_bi_Materiales_x_taller', 'V') IS NOT NULL
+IF OBJECT_ID('[N&M''S].vw_materiales_x_taller', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
 GO
 
-/*
-IF OBJECT_ID('[N&M''S].vw_bi_facturacion_x_cuatrimestre', 'V') IS NOT NULL
+IF OBJECT_ID('[N&M''S].vw_facturacion_x_cuatrimestre', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_bi_facturacion_x_cuatrimestre
 GO
 
+/*
 IF OBJECT_ID('[N&M''S].vw_bi_costo_x_rango_etario', 'V') IS NOT NULL
-	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
+	DROP VIEW [N&M'S].vw_bi_costo_x_rango_etario
 GO
 
 IF OBJECT_ID('[N&M''S].vw_bi_ganancia_camiones', 'V') IS NOT NULL
-	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
+	DROP VIEW [N&M'S].vw_bi_ganancia_camiones
 GO
 */
 
@@ -153,12 +153,11 @@ IF OBJECT_ID('[N&M''S].bi_Materiales_x_taller', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Materiales_x_taller
 GO
 
-IF OBJECT_ID('[N&M''S].bi_facturacion_x_cuatrimestre', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_facturacion_x_cuatrimestre
+IF OBJECT_ID('[N&M''S].bi_Facturacion_x_cuatrimestre', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Facturacion_x_cuatrimestre
 GO
 
 --Tablas de dimension
-
 
 IF OBJECT_ID('[N&M''S].bi_Tiempo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Tiempo
@@ -204,6 +203,9 @@ IF OBJECT_ID('[N&M''S].bi_Paquete', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Paquete
 GO
 
+IF OBJECT_ID('[N&M''S].bi_Chofer', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Chofer
+GO
 
 BEGIN TRANSACTION
 --------------------------------------------------- 
@@ -328,7 +330,7 @@ CREATE TABLE [N&M'S].bi_Materiales_x_taller (
 	PRIMARY KEY (taller_id, material_id, tarea_id)
 )
 
-CREATE TABLE [N&M'S].bi_facturacion_x_cuatrimestre(
+CREATE TABLE [N&M'S].bi_Facturacion_x_cuatrimestre(
 	recorrido_id INT REFERENCES [N&M'S].bi_Recorrido(recorrido_id),
 	tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
 	nro_viaje INT REFERENCES [N&M'S].bi_Viaje(nro_viaje),
@@ -345,12 +347,6 @@ GO
 -- CREACION DE FUNCIONES
 ---------------------------------------------------
 
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dada una fecha, devuelve el id correspondiente para los datos de combinados de cuatrimestre-año segun la fecha
-	@parameters: Fecha en formato DATETIME2
-	@return: El id encontrado de la tabla tiempo
-*/
 CREATE FUNCTION [N&M'S].fn_obtener_id_tiempo(@fecha DATETIME2) RETURNS INT AS
 	BEGIN
 		DECLARE @anio_de_fecha INT, @cuatrimestre_de_fecha INT, @id_tiempo INT
@@ -364,12 +360,6 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_tiempo(@fecha DATETIME2) RETURNS INT AS
 	END
 GO
 
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dada una fecha de nacimiento, devuelve un VARCHAR() informando el rango de edad de la persona
-	@parameters: Fecha de nacimiento
-	@return: El id segun el rango de edad al que pertenezca esa fecha
-*/
 CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT AS
 	BEGIN
 		DECLARE @edad_id INT, @edad INT, @fecha_actual DATETIME2
@@ -388,12 +378,6 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT A
 	END
 GO
 
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: xxxxx
-	@parameters: xxxxx
-	@return: xxxxx
-*/
 CREATE FUNCTION [N&M'S].fn_calcular_costo_mantenimiento(@camion_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
 BEGIN
 	DECLARE @costo_MO DECIMAL(18,2), @costo_materiales_x_tarea DECIMAL(18,2)
@@ -423,22 +407,9 @@ BEGIN
 END
 GO
 
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: xxxxx
-	@parameters: xxxxx
-	@return: xxxxx
-*/
 CREATE FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller(@tarea_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
 BEGIN
 	DECLARE @desvio DECIMAL(18,2)
-
-	
-	/*
-		El desvío se refiere a la diferencia entre la planificación y la ejecución de cada tarea.
-		Pueden tomar como desvío la diferencia entre fechas o la diferencia entre tiempos
-	*/
-
 	SELECT @desvio = SUM(DATEDIFF(DAY, fecha_inicio_planificada, fecha_inicio_real))
 			FROM [N&M'S].Tarea_x_Orden TxO
 				INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden 
@@ -667,16 +638,16 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
 	END CATCH
 GO
 
-
+-- TODO
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
 	DECLARE @ErrorState INT
 
 	BEGIN TRY
-		INSERT INTO [N&M'S].bi_facturacion_x_cuatrimestre (recorrido_id,tiempo_id,nro_viaje,paquete_id,camion_id, cantidad_paquete, facturacion_total)
-			SELECT r.recorrido_id, t.tiempo_id, v.nro_viaje, p.paquete_id, c.camion_id
-
+		/*INSERT INTO [N&M'S].bi_Facturacion_x_cuatrimestre (recorrido_id,tiempo_id,nro_viaje,paquete_id,camion_id, cantidad_paquete, facturacion_total)
+			SELECT r.recorrido_id, t.tiempo_id, v.nro_viaje, p.paquete_id, c.camion_id*/
+			RETURN
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
@@ -686,6 +657,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre AS
 GO
 
 /*
+-- TODO
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_costo_x_rango_etario AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -703,6 +675,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_costo_x_rango_etario AS
 	END CATCH
 GO
 
+-- TODO
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_ganancia_camiones AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -729,8 +702,6 @@ GO
 PRINT 'Realizando la migracion del modelo BI' + CHAR(13)
 GO
 
--- EJECUTAR A LO ULTIMO LAS TABLAS DE HECHOS
-
 EXEC [N&M'S].sp_cargar_bi_Tiempo
 EXEC [N&M'S].sp_cargar_bi_Edad
 EXEC [N&M'S].sp_cargar_bi_Camion
@@ -739,7 +710,6 @@ EXEC [N&M'S].sp_cargar_bi_Tarea
 EXEC [N&M'S].sp_cargar_bi_Taller
 EXEC [N&M'S].sp_cargar_bi_Material
 EXEC [N&M'S].sp_cargar_bi_Orden_de_Trabajo
-
 
 -- Tablas de hechos
 EXEC [N&M'S].sp_cargar_bi_Tiempo_fuera_servicio
@@ -789,22 +759,23 @@ CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
 		ORDER BY cantidad_veces_realizadas DESC
 GO
 
-CREATE VIEW [N&M'S].vw_bi_Materiales_x_taller AS
+CREATE VIEW [N&M'S].vw_materiales_x_taller AS
 	SELECT bm.descripcion 'material', bt.nombre 'taller', cantidad_material_utilizado
 		FROM [N&M'S].bi_Materiales_x_taller bmt
 			INNER JOIN [N&M'S].bi_Taller bt ON bt.taller_id = bmt.taller_id
 			INNER JOIN [N&M'S].bi_Material bm ON bm.material_id = bmt.material_id
 		WHERE bm.material_id IN (SELECT TOP 10 material_id FROM [N&M'S].bi_Materiales_x_taller bmt2 WHERE bmt2.taller_id = bmt.taller_id ORDER BY cantidad_material_utilizado DESC)
+GO
 
--- vista 6° ...
 CREATE VIEW [N&M'S].vw_facturacion_x_cuatrimestre AS 
-SELECT vi.recorrido_id, bt.cuatrimestre, sum(pqv.cantidad_paquete * pq.precio) FROM bi_facturacion_x_cuatrimestre FC
-inner join INNER JOIN [N&M'S].Paquete PQ on pq.paquete_id = fc.paquete_id
-inner join INNER JOIN [N&M'S].Paquete_x_Viaje PQV on pqv.paquete_id = fc.paquete_id and pqv.nro_viaje = fc.nro_viaje
-inner join INNER JOIN [N&M'S].Viaje VI on vi.nro_viaje = fc.nro_viaje
-INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = fc.tiempo_id
-group by vi.recorrido_id, bt.cuatrimestre
-
+	SELECT vi.recorrido_id, bt.cuatrimestre, SUM(pqv.cantidad_paquete * pq.precio) 'facturacion'
+		FROM [N&M'S].bi_Facturacion_x_cuatrimestre FC
+			INNER JOIN [N&M'S].Paquete PQ on pq.paquete_id = fc.paquete_id
+			INNER JOIN [N&M'S].Paquete_x_Viaje PQV on pqv.paquete_id = fc.paquete_id and pqv.nro_viaje = fc.nro_viaje
+			INNER JOIN [N&M'S].Viaje VI on vi.nro_viaje = fc.nro_viaje
+			INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = fc.tiempo_id
+		GROUP BY vi.recorrido_id, bt.cuatrimestre
+GO
 -- vista 7° ...
 -- CREATE VIEW [N&M'S].vw_costo_x_rango_etario AS SELECT * FROM xxx
 -- vista 8° ...
@@ -825,19 +796,14 @@ SELECT * FROM [N&M'S].bi_tiempo_fuera_servicio
 
 -- 1
 SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
-
 -- 2
 SELECT * FROM [N&M'S].vw_costo_total_mantenimiento_x_camion
-
 -- 3
 SELECT * FROM [N&M'S].vw_desvio_promedio_tarea_x_taller
-
 -- 4
 SELECT * FROM [N&M'S].vw_tareas_x_modelo
-
 -- 5
-SELECT * FROM [N&M'S].vw_bi_Materiales_x_taller
-
+SELECT * FROM [N&M'S].vw_materiales_x_taller
 -- 6
 SELECT * FROM [N&M'S].vw_facturacion_x_cuatrimestre
 -- 7
