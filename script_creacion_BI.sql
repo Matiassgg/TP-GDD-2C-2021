@@ -337,8 +337,8 @@ CREATE TABLE [N&M'S].bi_facturacion_x_cuatrimestre(
 	cantidad_paquetes int,
 	facturacion_total decimal(18,2)
 )
--- bi para 7° vista ...
--- bi para 8° vista ...
+-- bi para 7Â° vista ...
+-- bi para 8Â° vista ...
 GO
 
 ---------------------------------------------------
@@ -347,7 +347,7 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dada una fecha, devuelve el id correspondiente para los datos de combinados de cuatrimestre-año segun la fecha
+	@desc: Funcion que dada una fecha, devuelve el id correspondiente para los datos de combinados de cuatrimestre-aÃ±o segun la fecha
 	@parameters: Fecha en formato DATETIME2
 	@return: El id encontrado de la tabla tiempo
 */
@@ -379,9 +379,9 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT A
 
 		SELECT @edad_id =
 			CASE 
-				WHEN @edad BETWEEN 18 AND 30 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '18 - 30 años')
-				WHEN @edad BETWEEN 31 AND 50 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '31 - 50 años')
-				ELSE (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '> 50 años')
+				WHEN @edad BETWEEN 18 AND 30 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '18 - 30 aÃ±os')
+				WHEN @edad BETWEEN 31 AND 50 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '31 - 50 aÃ±os')
+				ELSE (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '> 50 aÃ±os')
 			END
 
 		RETURN @edad_id
@@ -435,8 +435,8 @@ BEGIN
 
 	
 	/*
-		El desvío se refiere a la diferencia entre la planificación y la ejecución de cada tarea.
-		Pueden tomar como desvío la diferencia entre fechas o la diferencia entre tiempos
+		El desvÃ­o se refiere a la diferencia entre la planificaciÃ³n y la ejecuciÃ³n de cada tarea.
+		Pueden tomar como desvÃ­o la diferencia entre fechas o la diferencia entre tiempos
 	*/
 
 	SELECT @desvio = SUM(DATEDIFF(DAY, fecha_inicio_planificada, fecha_inicio_real))
@@ -484,7 +484,7 @@ GO
 
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_Edad AS
 	BEGIN
-		INSERT INTO [N&M'S].bi_Edad (rango_edad) VALUES ('18 - 30 años'), ('31 - 50 años'), ('> 50 años')
+		INSERT INTO [N&M'S].bi_Edad (rango_edad) VALUES ('18 - 30 aÃ±os'), ('31 - 50 aÃ±os'), ('> 50 aÃ±os')
 	END
 GO
 
@@ -667,7 +667,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_Materiales_x_taller AS
 	END CATCH
 GO
 
-/*
+
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -685,6 +685,7 @@ CREATE PROCEDURE [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre AS
 	END CATCH
 GO
 
+/*
 CREATE PROCEDURE [N&M'S].sp_cargar_bi_costo_x_rango_etario AS
 	DECLARE @ErrorMessage NVARCHAR(MAX)
 	DECLARE @ErrorSeverity INT
@@ -723,7 +724,7 @@ GO
 
 
 ---------------------------------------------------
--- EJECUCIÓN DE STORED PROCEDURES
+-- EJECUCIÃ“N DE STORED PROCEDURES
 ---------------------------------------------------
 PRINT 'Realizando la migracion del modelo BI' + CHAR(13)
 GO
@@ -746,7 +747,7 @@ EXEC [N&M'S].sp_cargar_bi_Mantenimiento_camiones
 EXEC [N&M'S].sp_cargar_bi_Desvio_taller_x_tarea
 EXEC [N&M'S].sp_cargar_bi_Tareas_x_modelo
 EXEC [N&M'S].sp_cargar_bi_Materiales_x_taller
--- EXEC [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre
+EXEC [N&M'S].sp_cargar_bi_facturacion_x_cuatrimestre
 -- EXEC [N&M'S].sp_cargar_bi_costo_x_rango_etario
 -- EXEC [N&M'S].sp_cargar_bi_ganancia_camiones
 
@@ -795,11 +796,18 @@ CREATE VIEW [N&M'S].vw_bi_Materiales_x_taller AS
 			INNER JOIN [N&M'S].bi_Material bm ON bm.material_id = bmt.material_id
 		WHERE bm.material_id IN (SELECT TOP 10 material_id FROM [N&M'S].bi_Materiales_x_taller bmt2 WHERE bmt2.taller_id = bmt.taller_id ORDER BY cantidad_material_utilizado DESC)
 
--- vista 6° ...
--- CREATE VIEW [N&M'S].vw_facturacion_x_cuatrimestre AS SELECT * FROM xxx
--- vista 7° ...
+-- vista 6Â° ...
+CREATE VIEW [N&M'S].vw_facturacion_x_cuatrimestre AS 
+SELECT vi.recorrido_id, bt.cuatrimestre, sum(pqv.cantidad_paquete * pq.precio) FROM bi_facturacion_x_cuatrimestre FC
+inner join INNER JOIN [N&M'S].Paquete PQ on pq.paquete_id = fc.paquete_id
+inner join INNER JOIN [N&M'S].Paquete_x_Viaje PQV on pqv.paquete_id = fc.paquete_id and pqv.nro_viaje = fc.nro_viaje
+inner join INNER JOIN [N&M'S].Viaje VI on vi.nro_viaje = fc.nro_viaje
+INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = fc.tiempo_id
+group by vi.recorrido_id, bt.cuatrimestre
+
+-- vista 7Â° ...
 -- CREATE VIEW [N&M'S].vw_costo_x_rango_etario AS SELECT * FROM xxx
--- vista 8° ...
+-- vista 8Â° ...
 -- CREATE VIEW [N&M'S].vw_ganancia_camiones AS SELECT * FROM xxx
 
 GO
