@@ -16,18 +16,25 @@ IF OBJECT_ID('[N&M''S].sp_cargar_bi_Tarea_x_Orden', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Tarea_x_Orden
 GO
 
+IF OBJECT_ID('[N&M''S].sp_cargar_bi_Viaje', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_cargar_bi_Viaje
+GO
+
 IF OBJECT_ID('[N&M''S].sp_cargar_bi_Edad', 'P') IS NOT NULL
     DROP PROCEDURE [N&M'S].sp_cargar_bi_Edad
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_bi_reparaciones_camiones', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_bi_reparaciones_camiones
+IF OBJECT_ID('[N&M''S].sp_migrar_bi_Tareas', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_bi_Tareas
 GO
 
-IF OBJECT_ID('[N&M''S].sp_migrar_bi_costos_ganancias_camiones', 'P') IS NOT NULL
-    DROP PROCEDURE [N&M'S].sp_migrar_bi_costos_ganancias_camiones
+IF OBJECT_ID('[N&M''S].sp_migrar_bi_Viajes', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_bi_Viajes
 GO
 
+IF OBJECT_ID('[N&M''S].sp_migrar_bi_Costos_Mantenimiento', 'P') IS NOT NULL
+    DROP PROCEDURE [N&M'S].sp_migrar_bi_Costos_Mantenimiento
+GO
 --------------------------------------------------- 
 -- CHEQUEO DE FUNCIONES
 ---------------------------------------------------
@@ -46,7 +53,6 @@ GO
 IF OBJECT_ID('[N&M''S].fn_calcular_facturacion_recorrido') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_calcular_facturacion_recorrido
 GO
-
 
 IF OBJECT_ID('[N&M''S].fn_calcular_desvio_tarea_x_taller') IS NOT NULL
 	DROP FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller
@@ -95,20 +101,28 @@ IF OBJECT_ID('[N&M''S].vw_bi_Materiales_x_taller', 'V') IS NOT NULL
 	DROP VIEW [N&M'S].vw_bi_Materiales_x_taller
 GO
 
--- 6� vista ...
--- 7� vista ...
--- 8� vista ...
+IF OBJECT_ID('[N&M''S].vw_costo_promedio_x_rango_etario_de_choferes', 'V') IS NOT NULL
+	DROP VIEW [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes
+GO
+
+IF OBJECT_ID('[N&M''S].vw_ganancia_x_camion', 'V') IS NOT NULL
+    DROP VIEW [N&M'S].vw_ganancia_x_camion
+GO
 
 --------------------------------------------------- 
 -- CHEQUEO DE TABLAS DEL MODELO BI
 ---------------------------------------------------
 -- Tablas de hechos
-IF OBJECT_ID('[N&M''S].bi_reparaciones_camiones', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_reparaciones_camiones
+IF OBJECT_ID('[N&M''S].bi_Tareas', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tareas
 GO
 
-IF OBJECT_ID('[N&M''S].bi_costos_ganancias_camiones', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_costos_ganancias_camiones
+IF OBJECT_ID('[N&M''S].bi_Viajes', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Viajes
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Costos_Mantenimiento', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Costos_Mantenimiento
 GO
 
 -- Tablas de dimension
@@ -120,26 +134,24 @@ IF OBJECT_ID('[N&M''S].bi_Edad', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Edad
 GO
 
-IF OBJECT_ID('[N&M''S].bi_Modelo', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Modelo
-GO
-
-IF OBJECT_ID('[N&M''S].bi_Materiales_x_taller', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].bi_Materiales_x_taller
-GO
-
 IF OBJECT_ID('[N&M''S].bi_Orden_de_Trabajo', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Orden_de_Trabajo
 GO
 
-IF OBJECT_ID('[N&M''S].Tarea_x_Orden', 'U') IS NOT NULL
-	DROP TABLE [N&M'S].Tarea_x_Orden
+IF OBJECT_ID('[N&M''S].bi_Tarea_x_Orden', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Tarea_x_Orden
+GO
+
+IF OBJECT_ID('[N&M''S].bi_Viaje', 'U') IS NOT NULL
+	DROP TABLE [N&M'S].bi_Viaje
 GO
 
 BEGIN TRANSACTION
+
 --------------------------------------------------- 
 -- CREACION DE TABLAS DEL MODELO BI
 ---------------------------------------------------
+
 -- TABLAS DE DIMENSION
 CREATE TABLE [N&M'S].bi_Tiempo
 (
@@ -147,15 +159,14 @@ CREATE TABLE [N&M'S].bi_Tiempo
     anio INT NOT NULL,
     cuatrimestre INT NOT NULL
 )
+GO
 
-
--- restantes para 2� tablas de hechos
 CREATE TABLE [N&M'S].bi_Edad
 (
     edad_id INT PRIMARY KEY IDENTITY(1,1),
     rango_edad VARCHAR(510) NOT NULL
 )
-
+GO
 
 CREATE TABLE [N&M'S].bi_Orden_de_Trabajo
 (
@@ -164,8 +175,8 @@ CREATE TABLE [N&M'S].bi_Orden_de_Trabajo
     taller_id INT,
     fecha_generada DATETIME2,
     estado NVARCHAR(510)
-
 )
+GO
 
 CREATE TABLE [N&M'S].bi_Tarea_x_Orden
 (
@@ -178,12 +189,22 @@ CREATE TABLE [N&M'S].bi_Tarea_x_Orden
     fecha_fin_real DATETIME2,
     tiempo_ejecucion INT
 )
+GO
 
+CREATE TABLE [N&M'S].bi_Viaje (
+	nro_viaje INT PRIMARY KEY,
+	camion_id INT NOT NULL,
+	chofer_id INT NOT NULL,
+	recorrido_id INT NOT NULL,
+	fecha_inicio DATETIME2,
+	fecha_fin DATETIME2,
+	consumo_combustible DECIMAL(18,2)
+)
+GO
 
 -- TABLAS DE HECHOS
--- 1� tabla de hechos
--- tareas
-CREATE TABLE [N&M'S].bi_reparaciones_camiones (
+
+CREATE TABLE [N&M'S].bi_Tareas (
     tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
     nro_orden INT REFERENCES [N&M'S].bi_Orden_de_Trabajo(nro_orden),
     id_tarea_x_nro_orden INT REFERENCES [N&M'S].bi_Tarea_x_Orden(id_tarea_x_nro_orden),
@@ -198,24 +219,31 @@ CREATE TABLE [N&M'S].bi_reparaciones_camiones (
 )
 GO
 
-CREATE TABLE [N&M'S].bi_costos_ganancias_camiones
+CREATE TABLE [N&M'S].bi_Viajes
+(
+    tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
+    camion_id INT,
+    edad_id INT REFERENCES [N&M'S].bi_Edad(edad_id),
+    nro_viaje int,
+    recorrido_id INT,
+    costo_chofer DECIMAL(18,2),
+    facturacion_recorrido DECIMAL(18,2),
+    costo_viaje DECIMAL(18,2),
+    ingresos DECIMAL(18,2)
+	PRIMARY KEY (tiempo_id,camion_id,nro_viaje)
+)
+GO
+
+CREATE TABLE [N&M'S].bi_Costos_Mantenimiento
 (
     tiempo_id INT REFERENCES [N&M'S].bi_Tiempo(tiempo_id),
     camion_id INT,
     nro_orden INT REFERENCES [N&M'S].bi_Orden_de_Trabajo(nro_orden),
     id_tarea_x_nro_orden INT REFERENCES [N&M'S].bi_Tarea_x_Orden(id_tarea_x_nro_orden),
-    edad_id INT REFERENCES [N&M'S].bi_Edad(edad_id),
-    nro_viaje int,
     tarea_id INT,
 	taller_id INT,
-    modelo_id INT,
-    recorrido_id INT,
     costo_mantenimiento DECIMAL(18,2),
-    costo_chofer DECIMAL(18,2),
-    facturacion_recorrido DECIMAL(18,2),
-    costo_viaje DECIMAL(18,2),
-    ingresos DECIMAL(18,2)
-	PRIMARY KEY (tiempo_id,camion_id)
+	PRIMARY KEY (tiempo_id,camion_id,id_tarea_x_nro_orden,taller_id)
 )
 GO
 ---------------------------------------------------
@@ -245,32 +273,26 @@ GO
 
 /*
 	@autors: Grupo 18 - N&M'S
-	@desc: Funcion que dada una fecha de nacimiento, devuelve un VARCHAR() informando el rango de edad de la persona
+	@desc: Funcion que dada una fecha de nacimiento, devuelve el id rango de edad de la persona
 	@parameters: Fecha de nacimiento
 	@return: El id segun el rango de edad al que pertenezca esa fecha
 */
 CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT AS
 	BEGIN
-    DECLARE @edad_id INT, @edad INT, @fecha_actual DATETIME2
+		DECLARE @edad_id INT, @edad INT, @fecha_actual DATETIME2
 
-    SELECT @fecha_actual = GETDATE()
-    SELECT @edad = (DATEDIFF(DAY, @fecha, @fecha_actual) / 365)
+		SELECT @fecha_actual = GETDATE()
+		SELECT @edad = (DATEDIFF(DAY, @fecha, @fecha_actual) / 365)
 
-    SELECT @edad_id =
+		SELECT @edad_id =
 			CASE 
-				WHEN @edad BETWEEN 18 AND 30 THEN (SELECT edad_id
-        FROM [N&M'S].bi_edad
-        WHERE rango_edad = '18 - 30 a�os')
-				WHEN @edad BETWEEN 31 AND 50 THEN (SELECT edad_id
-        FROM [N&M'S].bi_edad
-        WHERE rango_edad = '31 - 50 a�os')
-				ELSE (SELECT edad_id
-        FROM [N&M'S].bi_edad
-        WHERE rango_edad = '> 50 a�os')
+				WHEN @edad BETWEEN 18 AND 30 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '18 - 30 años')
+				WHEN @edad BETWEEN 31 AND 50 THEN (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '31 - 50 años')
+				ELSE (SELECT edad_id FROM [N&M'S].bi_edad WHERE rango_edad = '> 50 años')
 			END
 
-    RETURN @edad_id
-END
+		RETURN @edad_id
+	END
 GO
 
 /*
@@ -309,7 +331,7 @@ GO
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Calcula la facutrancion de un recorrido en la fechainicio
-	@parameters: Recorrido, el Camion y la fecha
+	@parameters: Recorrido, Camion y fecha en la que se finalizo el recorrido para el camion
 	@return: La facturacion del recorrido
 */
 CREATE FUNCTION [N&M'S].fn_calcular_facturacion_recorrido(@recorrido_id INT, @camion_id INT, @fechaFin DATETIME2) RETURNS DECIMAL(18,2) AS
@@ -325,23 +347,21 @@ BEGIN
 END
 GO
 
-
-
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Calcula el desvio de una tarea para cierto taller
-	@parameters: xxxxx
-	@return: xxxxx
+	@parameters: La tarea y el taller donde se realizo la tarea
+	@return: El desvio de cierto tarea para un taller
 */
 CREATE FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller(@tarea_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
 BEGIN
     DECLARE @desvio DECIMAL(18,2)
 
     SELECT @desvio = SUM(DATEDIFF(DAY, fecha_inicio_planificada, fecha_inicio_real))
-    FROM [N&M'S].bi_Tarea_x_Orden TxO
-        INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden
-    WHERE tarea_id = @tarea_id AND taller_id = @taller_id
-    GROUP BY taller_id, tarea_id
+        FROM [N&M'S].bi_Tarea_x_Orden TxO
+            INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden
+        WHERE tarea_id = @tarea_id AND taller_id = @taller_id
+        GROUP BY taller_id, tarea_id
 
     IF @desvio IS NULL
 		SET @desvio = 0
@@ -353,254 +373,283 @@ GO
 /*
 	@autors: Grupo 18 - N&M'S
 	@desc: Calcula la cantidad de veces que una tarea fue hecha en cierto modelo
-	@parameters: Tarea y modelo
+	@parameters: Id de la Tarea y id del modelo
 	@return: La cantidad de veces que fue realizada la tarea para ese modelo
 */
 CREATE FUNCTION [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(@modelo_id INT, @tarea_id INT) RETURNS INT AS
 	BEGIN
     DECLARE @cantidad INT
     SELECT @cantidad = COUNT(tarea_id)
-    FROM [N&M'S].Camion bc
-        INNER JOIN [N&M'S].Modelo bm ON bc.modelo_id = bm.modelo_id
-        INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = bc.camion_id
-        INNER JOIN [N&M'S].bi_Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-    WHERE bm.modelo_id = @modelo_id AND TxO.tarea_id = @tarea_id
-    GROUP BY bm.modelo_id, TxO.tarea_id
+        FROM [N&M'S].Camion bc
+            INNER JOIN [N&M'S].Modelo bm ON bc.modelo_id = bm.modelo_id
+            INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = bc.camion_id
+            INNER JOIN [N&M'S].bi_Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
+        WHERE bm.modelo_id = @modelo_id AND TxO.tarea_id = @tarea_id
+        GROUP BY bm.modelo_id, TxO.tarea_id
     RETURN @cantidad
 END
 GO
+
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Calcula los ingresos para un cierto camion en un recorrido
+	@parameters: Id del Camion y id del recorrido 
+	@return: Los ingresos obtenidos para un camion
+*/
 
 CREATE FUNCTION [N&M'S].fn_calcular_ingresos(@camion_id INT, @recorrido_id INT) RETURNS INT AS
-	BEGIN
-    DECLARE @ingresos INT
-    SELECT @ingresos = SUM(pqv.cantidad_paquete * pq.precio)
-    FROM [N&M'S].Paquete PQ
-        inner join Paquete_x_Viaje PQV on pqv.paquete_id = pq.paquete_id
-        inner join Viaje VI on vi.nro_viaje = pqv.nro_viaje
-    where vi.camion_id = @camion_id and vi.recorrido_id = @recorrido_id
-    GROUP BY vi.camion_id, vi.recorrido_id
-    RETURN @ingresos
-END
+    BEGIN
+        DECLARE @ingresos INT
+        SELECT @ingresos = SUM(pqv.cantidad_paquete * pq.precio)
+            FROM [N&M'S].Paquete PQ
+                INNER JOIN  Paquete_x_Viaje PQV on pqv.paquete_id = pq.paquete_id
+                INNER JOIN  Viaje VI on vi.nro_viaje = pqv.nro_viaje
+            WHERE vi.camion_id = @camion_id and vi.recorrido_id = @recorrido_id
+            GROUP BY vi.camion_id, vi.recorrido_id
+        RETURN @ingresos
+    END
 GO
 
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Calcula la cantidad de materiales utilizados en el taller
+	@parameters: Taller y material
+	@return: Cantidad de materiales utilizados
+*/
 CREATE FUNCTION [N&M'S].fn_calcular_cantidad_de_materiales_utilizados_en_taller(@taller_id INT, @material_id INT) RETURNS INT AS
-	BEGIN
-    DECLARE @cantidad INT
+    BEGIN
+        DECLARE @cantidad INT
 
-    SELECT @cantidad = SUM(ISNULL(MxT.cantidad,0))
-    FROM [N&M'S].Orden_de_Trabajo OT
-        INNER JOIN [N&M'S].bi_Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-        INNER JOIN [N&M'S].Tarea T ON t.tarea_id = TxO.tarea_id
-        INNER JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = t.tarea_id
-    GROUP BY ot.taller_id, material_id, t.tarea_id
+        SELECT @cantidad = SUM(ISNULL(MxT.cantidad,0))
+            FROM [N&M'S].Orden_de_Trabajo OT
+                INNER JOIN [N&M'S].bi_Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
+                INNER JOIN [N&M'S].Tarea T ON t.tarea_id = TxO.tarea_id
+                INNER JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = t.tarea_id
+            GROUP BY ot.taller_id, material_id, t.tarea_id
 
-    RETURN @cantidad
-END
+        RETURN @cantidad
+    END
 GO
 
+/*
+	@autors: Grupo 18 - N&M'S
+	@desc: Calcula el costo de viaje a partir de la cantidad de combustible consumido y del costo del chofer
+	@parameters: consumo_combustible y costo_chofer
+	@return: Costo de viaje
+*/
 CREATE FUNCTION [N&M'S].fn_calcular_costo_viaje(@litrosConsumidos DECIMAL(18,2), @costoChofer INT )RETURNS INT AS
-BEGIN
-    RETURN @costoChofer + 100*@litrosConsumidos
-END
+    BEGIN
+        RETURN @costoChofer + 100*@litrosConsumidos
+    END
 GO
-
 
 --------------------------------------------------- 
 -- CREACION DE STORED PROCEDURES DEL MODELO BI
 ---------------------------------------------------
 
 -- Tablas de dimension
-CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo
-AS
-BEGIN
-    INSERT INTO [N&M'S].bi_Tiempo
-        (anio, cuatrimestre)
-                    SELECT DISTINCT YEAR(c.fecha_alta), DATEPART(QUARTER, C.fecha_alta)
-        FROM [N&M'S].Camion C
-    UNION
-        SELECT DISTINCT YEAR(ot.fecha_generada), DATEPART(QUARTER, OT.fecha_generada)
-        FROM [N&M'S].Orden_de_Trabajo OT
-    UNION
-        SELECT DISTINCT YEAR(V.fecha_fin), DATEPART(QUARTER, V.fecha_fin)
-        FROM [N&M'S].Viaje V
-    UNION
-        SELECT DISTINCT YEAR(V.fecha_inicio), DATEPART(QUARTER, V.fecha_inicio)
-        FROM [N&M'S].Viaje V
-END
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tiempo AS
+    BEGIN
+        INSERT INTO [N&M'S].bi_Tiempo (anio, cuatrimestre)
+            SELECT DISTINCT YEAR(c.fecha_alta), DATEPART(QUARTER, C.fecha_alta)
+                FROM [N&M'S].Camion C
+            UNION
+            SELECT DISTINCT YEAR(ot.fecha_generada), DATEPART(QUARTER, OT.fecha_generada)
+                FROM [N&M'S].Orden_de_Trabajo OT
+            UNION
+            SELECT DISTINCT YEAR(V.fecha_fin), DATEPART(QUARTER, V.fecha_fin)
+                FROM [N&M'S].Viaje V
+            UNION
+            SELECT DISTINCT YEAR(V.fecha_inicio), DATEPART(QUARTER, V.fecha_inicio)
+                FROM [N&M'S].Viaje V
+    END
 GO
 
-CREATE PROCEDURE [N&M'S].sp_cargar_bi_Edad
-AS
-BEGIN
-    INSERT INTO [N&M'S].bi_Edad
-        (rango_edad)
-    VALUES
-        ('18 - 30 años'),
-        ('31 - 50 años'),
-        ('> 50 años')
-END
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Edad AS
+    BEGIN
+        INSERT INTO [N&M'S].bi_Edad (rango_edad) VALUES ('18 - 30 años'), ('31 - 50 años'), ('> 50 años')
+    END
 GO
 
-
-
-CREATE PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo
-AS
-BEGIN
-
-    INSERT INTO [N&M'S].bi_Orden_de_Trabajo
-        (nro_orden,camion_id, taller_id, fecha_generada, estado)
-    SELECT nro_orden, camion_id, taller_id, fecha_generada, estado
-    FROM [N&M'S].Orden_de_Trabajo
-END
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Orden_de_Trabajo AS
+    BEGIN
+        INSERT INTO [N&M'S].bi_Orden_de_Trabajo (nro_orden,camion_id, taller_id, fecha_generada, estado)
+            SELECT nro_orden, camion_id, taller_id, fecha_generada, estado
+                FROM [N&M'S].Orden_de_Trabajo
+    END
 GO
 
-CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tarea_x_Orden
-AS
-BEGIN
-
-    INSERT INTO [N&M'S].bi_Tarea_x_Orden
-        (id_tarea_x_nro_orden,nro_orden,tarea_id,mecanico_id,fecha_inicio_planificada,fecha_inicio_real,fecha_fin_real,tiempo_ejecucion)
-		SELECT 
-			id_tarea_x_nro_orden, 
-			nro_orden, 
-			tarea_id, 
-			mecanico_id,
-			fecha_inicio_planificada,
-			fecha_inicio_real,
-			fecha_fin_real, 
-			tiempo_ejecucion
-			FROM [N&M'S].bi_Tarea_x_Orden
-END
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Tarea_x_Orden AS
+    BEGIN
+        INSERT INTO [N&M'S].bi_Tarea_x_Orden (id_tarea_x_nro_orden,nro_orden,tarea_id,mecanico_id,fecha_inicio_planificada,fecha_inicio_real,fecha_fin_real,tiempo_ejecucion)
+            SELECT 
+                id_tarea_x_nro_orden, 
+                nro_orden, 
+                tarea_id, 
+                mecanico_id,
+                fecha_inicio_planificada,
+                fecha_inicio_real,
+                fecha_fin_real, 
+                tiempo_ejecucion
+                FROM [N&M'S].Tarea_x_Orden
+    END
 GO
 
--- Migracion de tablas de hechos
--- tareas
-CREATE PROCEDURE [N&M'S].sp_migrar_bi_reparaciones_camiones
-AS
-DECLARE @ErrorMessage NVARCHAR(MAX)
-DECLARE @ErrorSeverity INT
-DECLARE @ErrorState INT
+CREATE PROCEDURE [N&M'S].sp_cargar_bi_Viaje AS
+    BEGIN
 
-BEGIN TRY
-		INSERT INTO [N&M'S].bi_reparaciones_camiones
-    (
-    tiempo_id,
-    nro_orden,
-    id_tarea_x_nro_orden,
-    camion_id,
-    taller_id,
-    tarea_id,
-    modelo_id,
-    tiempo_fuera_de_servicio,
-    desvio,
-    tarea_cantidad_veces_realizadas
-    )
+        INSERT INTO [N&M'S].bi_Viaje (nro_viaje,camion_id, chofer_id, recorrido_id, fecha_inicio, fecha_fin, consumo_combustible)
+            SELECT 
+                nro_viaje,
+                camion_id, 
+                chofer_id, 
+                recorrido_id, 
+                fecha_inicio, 
+                fecha_fin, 
+                consumo_combustible
+            FROM [N&M'S].Viaje
+    END
+GO
 
-SELECT
-    [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
-    OT.nro_orden,
-    TXO.id_tarea_x_nro_orden,
-    OT.camion_id,
-    OT.taller_id,
-    TXO.tarea_id,
-    C.modelo_id,
-    DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real), -- tiempo fuera de servicio
-    [N&M'S].fn_calcular_desvio_tarea_x_taller(OT.taller_id, TxO.tarea_id),-- desvio de tarea para ese taller
-    [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(c.modelo_id, TXO.tarea_id)-- cantidad de veces realizada la tarea para un modelo
-FROM [N&M'S].bi_Orden_de_Trabajo OT
-    INNER JOIN [N&M'S].bi_Tarea_x_Orden TXO ON TXO.nro_orden = OT.nro_orden
-    INNER JOIN [N&M'S].Camion C ON C.camion_id = OT.camion_id
-GROUP BY 
-	[N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
-    OT.nro_orden,
-    TXO.id_tarea_x_nro_orden,
-    OT.camion_id,
-    OT.taller_id,
-    TXO.tarea_id,
-    C.modelo_id,
-    DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real), -- tiempo fuera de servicio
-    [N&M'S].fn_calcular_desvio_tarea_x_taller(OT.taller_id, TxO.tarea_id),-- desvio de tarea para ese taller
-    [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(c.modelo_id, TXO.tarea_id)
-	END TRY
+CREATE PROCEDURE [N&M'S].sp_migrar_bi_Tareas AS
+    DECLARE @ErrorMessage NVARCHAR(MAX)
+    DECLARE @ErrorSeverity INT
+    DECLARE @ErrorState INT
+
+    BEGIN TRY
+        INSERT INTO [N&M'S].bi_Tareas (
+            tiempo_id,
+            nro_orden,
+            id_tarea_x_nro_orden,
+            camion_id,
+            taller_id,
+            tarea_id,
+            modelo_id,
+            tiempo_fuera_de_servicio,
+            desvio,
+            tarea_cantidad_veces_realizadas
+        )
+        SELECT
+            [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
+            OT.nro_orden,
+            TXO.id_tarea_x_nro_orden,
+            OT.camion_id,
+            OT.taller_id,
+            TXO.tarea_id,
+            C.modelo_id,
+            DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real), -- tiempo fuera de servicio
+            [N&M'S].fn_calcular_desvio_tarea_x_taller(OT.taller_id, TxO.tarea_id),-- desvio de tarea para ese taller
+            [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(c.modelo_id, TXO.tarea_id)-- cantidad de veces realizada la tarea para un modelo
+            FROM [N&M'S].bi_Orden_de_Trabajo OT
+                INNER JOIN [N&M'S].bi_Tarea_x_Orden TXO ON TXO.nro_orden = OT.nro_orden
+                INNER JOIN [N&M'S].Camion C ON C.camion_id = OT.camion_id
+            GROUP BY 
+                [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
+                OT.nro_orden,
+                TXO.id_tarea_x_nro_orden,
+                OT.camion_id,
+                OT.taller_id,
+                TXO.tarea_id,
+                C.modelo_id,
+                DATEDIFF(DAY,TxO.fecha_inicio_real,TxO.fecha_fin_real), -- tiempo fuera de servicio
+                [N&M'S].fn_calcular_desvio_tarea_x_taller(OT.taller_id, TxO.tarea_id),-- desvio de tarea para ese taller
+                [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(c.modelo_id, TXO.tarea_id)
+    END TRY
+    BEGIN CATCH
+        SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+        ROLLBACK TRANSACTION
+    END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_bi_Viajes AS
+    DECLARE @ErrorMessage NVARCHAR(MAX)
+    DECLARE @ErrorSeverity INT
+    DECLARE @ErrorState INT
+
+    BEGIN TRY
+        INSERT INTO [N&M'S].bi_Viajes (
+            tiempo_id,
+            camion_id,
+            edad_id,
+            nro_viaje,
+            recorrido_id,
+            costo_chofer,
+            facturacion_recorrido,
+            costo_viaje,
+            ingresos
+        )
+        SELECT
+            [N&M'S].fn_obtener_id_tiempo(V.fecha_fin),
+            V.camion_id,
+            [N&M'S].fn_obtener_id_rango_edad(CH.fecha_nacimiento), --CALCULA LA EDAD DEL CHOFER
+            V.nro_viaje,    
+            V.recorrido_id,
+            CH.costo_x_hora,
+            [N&M'S].fn_calcular_facturacion_recorrido(V.recorrido_id, V.camion_id, V.fecha_fin), --obtengo la facutacion de un recorido en una fecha en particular
+            [N&M'S].fn_calcular_costo_viaje(V.consumo_combustible, CH.costo_x_hora),
+            [N&M'S].fn_calcular_ingresos(V.camion_id,V.recorrido_id)
+            FROM [N&M'S].bi_Viaje V 
+                INNER JOIN [N&M'S].Camion C ON C.camion_id = V.camion_id
+                INNER JOIN [N&M'S].Chofer CH ON CH.chofer_id = V.chofer_id
+            GROUP BY 
+                [N&M'S].fn_obtener_id_tiempo(V.fecha_fin),
+                V.camion_id,
+                [N&M'S].fn_obtener_id_rango_edad(CH.fecha_nacimiento), --CALCULA LA EDAD DEL CHOFER
+                V.nro_viaje,
+                V.recorrido_id,
+                CH.costo_x_hora,
+                [N&M'S].fn_calcular_facturacion_recorrido(V.recorrido_id, V.camion_id, V.fecha_fin), --obtengo la facutacion de un recorido en una fecha en particular
+                [N&M'S].fn_calcular_costo_viaje(V.consumo_combustible, CH.costo_x_hora),
+                [N&M'S].fn_calcular_ingresos(V.camion_id,V.recorrido_id)
+        END TRY
+        BEGIN CATCH
+            SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
+            RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+            ROLLBACK TRANSACTION
+        END CATCH
+GO
+
+CREATE PROCEDURE [N&M'S].sp_migrar_bi_Costos_Mantenimiento AS
+    DECLARE @ErrorMessage NVARCHAR(MAX)
+    DECLARE @ErrorSeverity INT
+    DECLARE @ErrorState INT
+
+    BEGIN TRY
+        INSERT INTO [N&M'S].bi_Costos_Mantenimiento (
+            tiempo_id,
+            camion_id,
+            nro_orden,
+            id_tarea_x_nro_orden,
+            tarea_id,
+            taller_id,
+            costo_mantenimiento
+        )
+        SELECT
+            [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
+            OT.camion_id,
+            OT.nro_orden,
+            TXO.id_tarea_x_nro_orden,
+            TXO.tarea_id,
+            OT.taller_id,
+            [N&M'S].fn_calcular_costo_mantenimiento(OT.camion_id,OT.taller_id,OT.fecha_generada) --obtengo el gasto de un camion en una taller de una fecha en particular
+            FROM [N&M'S].bi_Orden_de_Trabajo OT
+                INNER JOIN [N&M'S].bi_Tarea_x_Orden TXO ON TXO.nro_orden = OT.nro_orden
+            GROUP BY 
+                [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
+                OT.camion_id,
+                OT.nro_orden,
+                TXO.id_tarea_x_nro_orden,
+                TXO.tarea_id,
+                OT.taller_id,
+                [N&M'S].fn_calcular_costo_mantenimiento(OT.camion_id,OT.taller_id,OT.fecha_generada)
+        END TRY
 	BEGIN CATCH
 		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
 		ROLLBACK TRANSACTION
 	END CATCH
 GO
-
--- costos
-
-
-CREATE PROCEDURE [N&M'S].sp_migrar_bi_costos_ganancias_camiones
-AS
-DECLARE @ErrorMessage NVARCHAR(MAX)
-DECLARE @ErrorSeverity INT
-DECLARE @ErrorState INT
-
-BEGIN TRY
-	INSERT INTO [N&M'S].bi_costos_ganancias_camiones (
-		tiempo_id,
-		camion_id,
-		nro_orden,
-		id_tarea_x_nro_orden,
-		edad_id,
-		nro_viaje,
-		tarea_id,
-		taller_id,
-		modelo_id,
-		recorrido_id,
-		costo_mantenimiento,
-		costo_chofer,
-		facturacion_recorrido,
-		costo_viaje,
-		ingresos)
-
-SELECT
-    [N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
-    OT.camion_id,
-    OT.nro_orden,
-    TXO.id_tarea_x_nro_orden,
-    [N&M'S].fn_obtener_id_rango_edad(CH.fecha_nacimiento), --CALCULA LA EDAD DEL CHOFER
-    V.nro_viaje,
-    OT.taller_id,
-    TXO.tarea_id,
-    C.modelo_id,
-    V.recorrido_id,
-    [N&M'S].fn_calcular_costo_mantenimiento(OT.camion_id,OT.taller_id,OT.fecha_generada), --obtengo el gasto de un camion en una taller de una fecha en particular
-    CH.costo_x_hora,
-    [N&M'S].fn_calcular_facturacion_recorrido(V.recorrido_id, OT.camion_id, V.fecha_fin), --obtengo la facutacion de un recorido en una fecha en particular
-    [N&M'S].fn_calcular_costo_viaje(V.consumo_combustible, CH.costo_x_hora),
-    [N&M'S].fn_calcular_ingresos(OT.camion_id,V.recorrido_id)
-FROM [N&M'S].bi_Orden_de_Trabajo OT
-    INNER JOIN [N&M'S].bi_Tarea_x_Orden TXO ON TXO.nro_orden = OT.nro_orden
-    INNER JOIN [N&M'S].Camion C ON C.camion_id = OT.camion_id
-    INNER JOIN [N&M'S].Viaje V ON V.camion_id = OT.camion_id
-    INNER JOIN [N&M'S].Chofer CH ON CH.chofer_id = V.chofer_id
-GROUP BY 
-	[N&M'S].fn_obtener_id_tiempo(OT.fecha_generada),
-    OT.camion_id,
-    OT.nro_orden,
-    TXO.id_tarea_x_nro_orden,
-    [N&M'S].fn_obtener_id_rango_edad(CH.fecha_nacimiento), --CALCULA LA EDAD DEL CHOFER
-    V.nro_viaje,
-    OT.taller_id,
-    TXO.tarea_id,
-    C.modelo_id,
-	 V.recorrido_id,
-    [N&M'S].fn_calcular_costo_mantenimiento(OT.camion_id,OT.taller_id,OT.fecha_generada), --obtengo el gasto de un camion en una taller de una fecha en particular
-    CH.costo_x_hora,
-    [N&M'S].fn_calcular_facturacion_recorrido(V.recorrido_id, OT.camion_id, V.fecha_fin), --obtengo la facutacion de un recorido en una fecha en particular
-    [N&M'S].fn_calcular_costo_viaje(V.consumo_combustible, CH.costo_x_hora),
-    [N&M'S].fn_calcular_ingresos(OT.camion_id,V.recorrido_id)
-	END TRY
-	BEGIN CATCH
-		SELECT @ErrorMessage = ERROR_MESSAGE(), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE() 
-		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
-		ROLLBACK TRANSACTION
-	END CATCH
-GO
-
 
 ---------------------------------------------------
 -- EJECUCION DE STORED PROCEDURES
@@ -613,117 +662,115 @@ EXEC [N&M'S].sp_cargar_bi_Tiempo
 EXEC [N&M'S].sp_cargar_bi_Edad
 EXEC [N&M'S].sp_cargar_bi_Orden_de_Trabajo
 EXEC [N&M'S].sp_cargar_bi_Tarea_x_Orden
-
+EXEC [N&M'S].sp_cargar_bi_Viaje
 
 -- Tablas de hechos
-EXEC [N&M'S].sp_migrar_bi_reparaciones_camiones
-EXEC [N&M'S].sp_migrar_bi_costos_ganancias_camiones
-
-
+EXEC [N&M'S].sp_migrar_bi_Tareas
+EXEC [N&M'S].sp_migrar_bi_Viajes
+EXEC [N&M'S].sp_migrar_bi_Costos_Mantenimiento
 GO
 --------------------------------------------------- 
 -- CREACION DE VISTAS
 ---------------------------------------------------
-
 --1
-CREATE VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio
-AS
-    SELECT rc.camion_id, T.cuatrimestre, MAX(rc.tiempo_fuera_de_servicio) 'maximo tiempo fuera de servicio'
-    FROM [N&M'S].bi_reparaciones_camiones RC
-        INNER JOIN [N&M'S].bi_Tiempo T on T.tiempo_id = RC.tiempo_id
-    GROUP BY RC.camion_id, T.cuatrimestre
+CREATE VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio AS
+    SELECT T.camion_id, TMP.cuatrimestre, MAX(T.tiempo_fuera_de_servicio) 'Maximo Tiempo Fuera de Servicio'
+    FROM [N&M'S].bi_Tareas T
+        INNER JOIN [N&M'S].bi_Tiempo TMP on TMP.tiempo_id = T.tiempo_id
+    GROUP BY T.camion_id, TMP.cuatrimestre
 GO
 
---3
-CREATE VIEW [N&M'S].vw_desvio_promedio_tarea_x_taller
-AS
-    SELECT RC.taller_id, RC.tarea_id, AVG(RC.desvio) 'Desvio promedio'
-    FROM [N&M'S].bi_reparaciones_camiones RC
-    GROUP BY RC.taller_id, RC.tarea_id
-GO
-
-
---4
-CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
-    SELECT DISTINCT TOP 5
-        M.descripcion 'modelo', T.nombre 'tarea', RC.tarea_cantidad_veces_realizadas
-    FROM [N&M'S].bi_reparaciones_camiones RC
-        INNER JOIN [N&M'S].Modelo M ON M.modelo_id = RC.modelo_id
-        INNER JOIN [N&M'S].Tarea T ON T.tarea_id = RC.tarea_id
-    ORDER BY RC.tarea_cantidad_veces_realizadas DESC
-GO
-
-
---6
-CREATE VIEW [N&M'S].vw_facturacion_total_por_recorrido_por_cuatrimestre AS
-	select CGC.recorrido_id, T.cuatrimestre, sum(CGC.facturacion_recorrido) 'facturacion' FROM [N&M'S].bi_costos_ganancias_camiones CGC
-	INNER JOIN [N&M'S].bi_Tiempo T on T.tiempo_id = CGC.tiempo_id
-	GROUP BY CGC.recorrido_id, T.cuatrimestre
-GO
-
---7
-CREATE VIEW [N&M'S].costo_promedio_x_rango_etario_de_choferes
-AS
-	SELECT CGC.edad_id, E.rango_edad,avg(CGC.costo_chofer) 'costo promedio' FROM [N&M'S].bi_costos_ganancias_camiones CGC
-		INNER JOIN [N&M'S].bi_Edad E on E.edad_id = CGC.edad_id
-	GROUP BY CGC.edad_id, E.rango_edad
-GO
-
-/*
+-- 2
 CREATE VIEW [N&M'S].vw_costo_total_mantenimiento_x_camion AS
-	SELECT bc.camion_id, ta.nombre, bt.cuatrimestre, bmc.costo_mantenimiento
-		FROM [N&M'S].bi_mantenimiento_camiones bmc
-			INNER JOIN [N&M'S].bi_Tiempo bt ON bt.tiempo_id = bmc.tiempo_id
-			INNER JOIN [N&M'S].bi_Camion bc ON bc.camion_id = bmc.camion_id
-			INNER JOIN [N&M'S].bi_Taller ta ON ta.taller_id = bmc.taller_id
+	SELECT V.camion_id, V.taller_id, BT.cuatrimestre, V.costo_mantenimiento 
+		FROM [N&M'S].bi_Costos_Mantenimiento V
+			INNER JOIN [N&M'S].bi_Tiempo BT ON BT.tiempo_id = V.tiempo_id
+		GROUP BY V.camion_id, V.taller_id, BT.cuatrimestre, V.costo_mantenimiento 
 GO
 
+-- 3
+CREATE VIEW [N&M'S].vw_desvio_promedio_tarea_x_taller AS
+    SELECT T.taller_id, T.tarea_id, AVG(T.desvio) 'Desvio Promedio'
+        FROM [N&M'S].bi_Tareas T
+        GROUP BY T.taller_id, T.tarea_id
+GO
 
+-- 4
+CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
+    SELECT DISTINCT TOP 5 M.descripcion 'Modelo', T.nombre 'Tarea', BT.tarea_cantidad_veces_realizadas
+        FROM [N&M'S].bi_Tareas BT
+            INNER JOIN [N&M'S].Modelo M ON M.modelo_id = BT.modelo_id
+            INNER JOIN [N&M'S].Tarea T ON T.tarea_id = BT.tarea_id
+        ORDER BY BT.tarea_cantidad_veces_realizadas DESC
+GO
 
+-- 5
+CREATE VIEW [N&M'S].vw_bi_materiales_x_taller AS
+    SELECT TOP 10 T.taller_id, MxT.material_id ,ISNULL(SUM(MxT.cantidad),0) 'Cantidad de Materiales'
+		FROM [N&M'S].bi_Tareas T
+			INNER JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = T.tarea_id
+		GROUP BY T.taller_id, MxT.material_id
+		ORDER BY SUM(MxT.cantidad) DESC
+GO
 
-CREATE VIEW [N&M'S].vw_bi_Materiales_x_taller AS
-	SELECT bm.descripcion 'material', bt.nombre 'taller', cantidad_material_utilizado
-		FROM [N&M'S].bi_Materiales_x_taller bmt
-			INNER JOIN [N&M'S].bi_Taller bt ON bt.taller_id = bmt.taller_id
-			INNER JOIN [N&M'S].bi_Material bm ON bm.material_id = bmt.material_id
-		WHERE bm.material_id IN (SELECT TOP 10 material_id FROM [N&M'S].bi_Materiales_x_taller bmt2 WHERE bmt2.taller_id = bmt.taller_id ORDER BY cantidad_material_utilizado DESC)
--- vista 6 ...
--- vista 7 ...
--- vista 8 ...
-GO*/
+-- 6
+CREATE VIEW [N&M'S].vw_facturacion_total_por_recorrido_por_cuatrimestre AS
+	SELECT V.recorrido_id, T.cuatrimestre, sum(V.facturacion_recorrido) 'Facturacion' 
+        FROM [N&M'S].bi_Viajes V
+		    INNER JOIN [N&M'S].bi_Tiempo T on T.tiempo_id = V.tiempo_id
+	    GROUP BY V.recorrido_id, T.cuatrimestre
+GO
 
-/*
--- TABLAS
--- VISTAS
+-- 7
+CREATE VIEW [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes AS
+	SELECT V.edad_id, E.rango_edad,avg(V.costo_chofer) 'Costo Promedio' 
+        FROM [N&M'S].bi_Viajes V
+		    INNER JOIN [N&M'S].bi_Edad E on E.edad_id = V.edad_id
+	    GROUP BY V.edad_id, E.rango_edad
+GO
+
+-- 8
+CREATE VIEW [N&M'S].vw_ganancia_x_camion AS
+    SELECT V.camion_id, (SUM(V.ingresos) - SUM(V.costo_viaje) - SUM(CM.costo_mantenimiento)) 'Ganancia'
+        FROM [N&M'S].bi_Viajes V
+            INNER JOIN [N&M'S].bi_Costos_Mantenimiento CM on CM.camion_id = V.camion_id
+        GROUP BY V.camion_id
+GO
+
+--------------------------------------------------- 
+-- SELECCION DE VISTAS
+---------------------------------------------------
+
 -- 1
 SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
+
 -- 2
 SELECT * FROM [N&M'S].vw_costo_total_mantenimiento_x_camion
+
 -- 3
 SELECT * FROM [N&M'S].vw_desvio_promedio_tarea_x_taller
+
 -- 4
 SELECT * FROM [N&M'S].vw_tareas_x_modelo
+
 -- 5
-SELECT * FROM [N&M'S].vw_bi_Materiales_x_taller
+SELECT * FROM [N&M'S].vw_bi_materiales_x_taller
+
 -- 6
 SELECT * FROM [N&M'S].vw_facturacion_total_por_recorrido_por_cuatrimestre
+
 -- 7
+SELECT * FROM [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes
+
 -- 8
-*/
+SELECT * FROM [N&M'S].vw_ganancia_x_camion
 
--- SELECT @@TRANCOUNT
--- SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'N&M''S'
-
-/*SELECT *
-FROM [N&M'S].bi_reparaciones_camiones*/
-
-SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
-SELECT * FROM [N&M'S].vw_desvio_promedio_tarea_x_taller
-SELECT * FROM [N&M'S].vw_tareas_x_modelo
-
+--------------------------------------------------- 
+-- FIN TRANSACCION
+---------------------------------------------------
 
 BEGIN
-    DECLARE @id_test BIT = 1
+    DECLARE @id_test BIT = 0
 
     IF @id_test = 1
 		BEGIN
@@ -737,3 +784,7 @@ BEGIN
     END
 END
 GO
+
+--------------------------------------------------- 
+-- FIN
+---------------------------------------------------
