@@ -174,7 +174,6 @@ GO
 IF OBJECT_ID('[N&M''S].bi_Recorrido', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Recorrido
 GO
-------------------------------------------------------------------------------------------------------------------------------------------------
 
 IF OBJECT_ID('[N&M''S].bi_Viaje', 'U') IS NOT NULL
 	DROP TABLE [N&M'S].bi_Viaje
@@ -336,156 +335,6 @@ CREATE FUNCTION [N&M'S].fn_obtener_id_rango_edad(@fecha DATETIME2) RETURNS INT A
 
 		RETURN @edad_id
 	END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula el costo de mantenimiento de un camion que estuvo en cierto taller
-	@parameters: El camion y el taller donde se hizo las reparaciones
-	@return: El costo de mantenimiento
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_costo_mantenimiento(@camion_id INT, @taller_id INT, @fecha DATETIME2, @tarea_id INT, @material_id INT) RETURNS DECIMAL(18,2) AS
-BEGIN
-    DECLARE @costo_MO DECIMAL(18,2), @costo_materiales_x_tarea DECIMAL(18,2)
-
-    -- Costo materiales x tarea
-    SELECT @costo_materiales_x_tarea = SUM(ISNULL(M.precio,0))
-    FROM [N&M'S].bi_Material M
-        INNER JOIN [N&M'S].Material_x_Tarea MxT ON M.material_id = MxT.material_id
-		--INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.tarea_id = MxT.tarea_id
-		--INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden
-	--WHERE OT.camion_id = @camion_id AND OT.taller_id = @taller_id AND OT.fecha_generada = @fecha
-	WHERE MxT.tarea_id = @tarea_id AND M.material_id = @material_id /*IN (SELECT DISTINCT TxO.tarea_id 
-								FROM [N&M'S].Orden_de_Trabajo OT
-									INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-								WHERE OT.camion_id = @camion_id AND OT.taller_id = @taller_id AND OT.fecha_generada = @fecha
-								GROUP BY tarea_id)*/
-
-    -- Costo MO
-    SELECT @costo_MO = SUM((M.costo_x_hora * 8) * TxO.tiempo_ejecucion)
-		FROM [N&M'S].Orden_de_Trabajo OT
-			INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-			INNER JOIN [N&M'S].Mecanico M ON m.mecanico_id = TxO.mecanico_id
-		WHERE OT.camion_id = @camion_id AND OT.taller_id = @taller_id AND TxO.tarea_id = @tarea_id
-		GROUP BY OT.camion_id
-
-    RETURN @costo_MO + @costo_materiales_x_tarea
-END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula la facutrancion de un recorrido en la fechainicio
-	@parameters: Recorrido, Camion y fecha en la que se finalizo el recorrido para el camion
-	@return: La facturacion del recorrido
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_facturacion_recorrido(@recorrido_id INT, @camion_id INT, @fechaFin DATETIME2) RETURNS DECIMAL(18,2) AS
-BEGIN
-    DECLARE @facturacion DECIMAL(18,2)
-
-    SELECT @facturacion = R.precio
-		FROM [N&M'S].Viaje V
-			INNER JOIN [N&M'S].Recorrido R on R.recorrido_id = V.recorrido_id
-		WHERE V.recorrido_id = @recorrido_id and V.camion_id =  @camion_id and V.fecha_fin = @fechaFin
-
-    RETURN @facturacion
-END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula el desvio de una tarea para cierto taller
-	@parameters: La tarea y el taller donde se realizo la tarea
-	@return: El desvio de cierto tarea para un taller
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_desvio_tarea_x_taller(@tarea_id INT, @taller_id INT) RETURNS DECIMAL(18,2) AS
-BEGIN
-    DECLARE @desvio DECIMAL(18,2)
-
-    SELECT @desvio = SUM(DATEDIFF(DAY, fecha_inicio_planificada, fecha_inicio_real))
-        FROM [N&M'S].Tarea_x_Orden TxO
-            INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.nro_orden = TxO.nro_orden
-        WHERE tarea_id = @tarea_id AND taller_id = @taller_id
-        GROUP BY taller_id, tarea_id
-
-    IF @desvio IS NULL
-		SET @desvio = 0
-
-    RETURN @desvio
-END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula la cantidad de veces que una tarea fue hecha en cierto modelo
-	@parameters: Id de la Tarea y id del modelo
-	@return: La cantidad de veces que fue realizada la tarea para ese modelo
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_cantidad_de_veces_tarea_realizada_para_modelo(@modelo_id INT, @tarea_id INT) RETURNS INT AS
-	BEGIN
-    DECLARE @cantidad INT
-    SELECT @cantidad = COUNT(tarea_id)
-        FROM [N&M'S].Camion bc
-            INNER JOIN [N&M'S].Modelo bm ON bc.modelo_id = bm.modelo_id
-            INNER JOIN [N&M'S].Orden_de_Trabajo OT ON OT.camion_id = bc.camion_id
-            INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-        WHERE bm.modelo_id = @modelo_id AND TxO.tarea_id = @tarea_id
-        GROUP BY bm.modelo_id, TxO.tarea_id
-    RETURN @cantidad
-END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula los ingresos para un cierto camion en un recorrido
-	@parameters: Id del Camion y id del recorrido 
-	@return: Los ingresos obtenidos para un camion
-*/
-
-CREATE FUNCTION [N&M'S].fn_calcular_ingresos(@camion_id INT, @recorrido_id INT) RETURNS INT AS
-    BEGIN
-        DECLARE @ingresos INT
-        SELECT @ingresos = SUM(pqv.cantidad_paquete * pq.precio)
-            FROM [N&M'S].Paquete PQ
-                INNER JOIN  Paquete_x_Viaje PQV on pqv.paquete_id = pq.paquete_id
-                INNER JOIN  Viaje VI on vi.nro_viaje = pqv.nro_viaje
-            WHERE vi.camion_id = @camion_id and vi.recorrido_id = @recorrido_id
-            GROUP BY vi.camion_id, vi.recorrido_id
-        RETURN @ingresos
-    END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula la cantidad de materiales utilizados en el taller
-	@parameters: Taller y material
-	@return: Cantidad de materiales utilizados
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_cantidad_de_materiales_utilizados_en_taller(@taller_id INT, @material_id INT) RETURNS INT AS
-    BEGIN
-        DECLARE @cantidad INT
-
-        SELECT @cantidad = SUM(ISNULL(MxT.cantidad,0))
-            FROM [N&M'S].Orden_de_Trabajo OT
-                INNER JOIN [N&M'S].Tarea_x_Orden TxO ON TxO.nro_orden = OT.nro_orden
-                INNER JOIN [N&M'S].Tarea T ON t.tarea_id = TxO.tarea_id
-                INNER JOIN [N&M'S].Material_x_Tarea MxT ON MxT.tarea_id = t.tarea_id
-            GROUP BY ot.taller_id, material_id, t.tarea_id
-
-        RETURN @cantidad
-    END
-GO
-
-/*
-	@autors: Grupo 18 - N&M'S
-	@desc: Calcula el costo de viaje a partir de la cantidad de combustible consumido y del costo del chofer
-	@parameters: consumo_combustible y costo_chofer
-	@return: Costo de viaje
-*/
-CREATE FUNCTION [N&M'S].fn_calcular_costo_viaje(@litrosConsumidos DECIMAL(18,2), @costoChofer INT )RETURNS INT AS
-    BEGIN
-        RETURN @costoChofer + 100*@litrosConsumidos
-    END
 GO
 
 --------------------------------------------------- 
@@ -690,10 +539,9 @@ GO
 --------------------------------------------------- 
 -- CREACION DE VISTAS
 ---------------------------------------------------
-
 --1
 CREATE VIEW [N&M'S].vw_max_tiempo_fuera_de_servicio AS
-    SELECT BOT.camion_id, TMP.cuatrimestre, MAX(BOT.maximo_tiempo_fuera_servicio) 'Maximo Tiempo Fuera de Servicio'
+    SELECT BOT.camion_id 'camion', TMP.cuatrimestre, MAX(BOT.maximo_tiempo_fuera_servicio) 'maximo_tiempo_fuera_de_servicio'
     FROM [N&M'S].bi_Ordenes_Trabajo BOT
         INNER JOIN [N&M'S].bi_Tiempo TMP on TMP.tiempo_id = BOT.tiempo_id
     GROUP BY BOT.camion_id, TMP.cuatrimestre
@@ -701,7 +549,7 @@ GO
 
 -- 2
 CREATE VIEW [N&M'S].vw_costo_total_mantenimiento_x_camion AS
-	SELECT BOT.camion_id, BOT.taller_id, BT.cuatrimestre, BOT.costo_mantenimiento 
+	SELECT BOT.camion_id 'camion', BOT.taller_id 'taller', BT.cuatrimestre, BOT.costo_mantenimiento 
 		FROM [N&M'S].bi_Ordenes_Trabajo BOT
 			INNER JOIN [N&M'S].bi_Tiempo BT ON BT.tiempo_id = BOT.tiempo_id
 		GROUP BY BOT.camion_id, BOT.taller_id, BT.cuatrimestre, BOT.costo_mantenimiento 
@@ -709,14 +557,14 @@ GO
 
 -- 3
 CREATE VIEW [N&M'S].vw_desvio_promedio_tarea_x_taller AS
-    SELECT BOT.taller_id, BOT.tarea_id, AVG(BOT.desvio) 'Desvio Promedio'
+    SELECT BOT.taller_id 'taller', BOT.tarea_id 'tarea', AVG(BOT.desvio) 'desvio_Promedio'
         FROM [N&M'S].bi_Ordenes_Trabajo BOT
         GROUP BY BOT.taller_id, BOT.tarea_id
 GO
 
 -- 4
 CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
-    SELECT T.nombre 'Tarea', M.descripcion 'Modelo', COUNT(BOT.tarea_id) 'Cantidad veces realizada'
+    SELECT M.descripcion 'modelo', T.nombre 'tarea', COUNT(BOT.tarea_id) 'cantidad_de_veces_realizada'
         FROM [N&M'S].bi_Ordenes_Trabajo BOT
             INNER JOIN [N&M'S].bi_Modelo M ON M.modelo_id = BOT.modelo_id
             INNER JOIN [N&M'S].bi_Tarea T ON T.tarea_id = BOT.tarea_id
@@ -724,19 +572,18 @@ CREATE VIEW [N&M'S].vw_tareas_x_modelo AS
                                 FROM [N&M'S].bi_Ordenes_Trabajo BOT2
                                     INNER JOIN [N&M'S].bi_Modelo M2 ON M2.modelo_id = BOT2.modelo_id
                                     INNER JOIN [N&M'S].bi_Tarea T2 ON T2.tarea_id = BOT2.tarea_id
-                                WHERE T2.tarea_id = BOT2.tarea_id
+                                WHERE M.modelo_id = M2.modelo_id
                                 GROUP BY M2.modelo_id, T2.tarea_id
                                 ORDER BY COUNT(BOT2.tarea_id) DESC)
         GROUP BY M.descripcion, T.nombre
-		
 GO
 
 -- 5
 CREATE VIEW [N&M'S].vw_bi_materiales_x_taller AS
-    SELECT BT.nombre, BM.descripcion , COUNT(BOT.material_id) 'Cantidad veces utilizado'
+    SELECT BT.nombre 'taller', BM.descripcion 'material', COUNT(BOT.material_id) 'cantidad_de_veces_utilizado'
 		FROM [N&M'S].bi_Ordenes_Trabajo BOT
             INNER JOIN [N&M'S].bi_Material BM ON BM.material_id = BOT.material_id
-            INNER JOIN [N&M'S].bi_Taller BT ON BT.taller_id = BOT.material_id
+            INNER JOIN [N&M'S].bi_Taller BT ON BT.taller_id = BOT.taller_id
         WHERE BOT.material_id IN (SELECT TOP 10 BOT2.material_id 
                                     FROM [N&M'S].bi_Ordenes_Trabajo BOT2
                                         INNER JOIN [N&M'S].bi_Material BM2 ON BM2.material_id = BOT2.material_id
@@ -748,25 +595,24 @@ GO
 
 -- 6
 CREATE VIEW [N&M'S].vw_facturacion_total_por_recorrido_por_cuatrimestre AS
-	SELECT BV.recorrido_id, BT.cuatrimestre, SUM(BV.facturacion_recorrido) 'Facturacion' 
+	SELECT BV.recorrido_id 'recorrido', BT.cuatrimestre, SUM(BV.facturacion_recorrido) 'facturacion' 
         FROM [N&M'S].bi_Viajes BV
 		    INNER JOIN [N&M'S].bi_Tiempo BT on BT.tiempo_id = BV.tiempo_id
 	    GROUP BY BV.recorrido_id, BT.cuatrimestre
 GO
 
 -- 7
-/*
 CREATE VIEW [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes AS
-	SELECT E.rango_edad, AVG(BV.costo_chofer) 'Costo Promedio' 
-        FROM [N&M'S].bi_Viajes BV
-		    INNER JOIN [N&M'S].bi_Edad E on E.edad_id = BV.edad_id
-	    GROUP BY E.rango_edad
+	SELECT E.rango_edad, AVG(CH.costo_x_hora) 'costo promedio'
+		FROM [N&M'S].bi_Viajes BV
+			INNER JOIN [N&M'S].bi_Edad E ON E.edad_id = BV.edad_id
+			INNER JOIN [N&M'S].bi_Chofer CH ON CH.chofer_id = BV.chofer_id
+		GROUP BY E.rango_edad
 GO
-*/
 
 -- 8
 CREATE VIEW [N&M'S].vw_ganancia_x_camion AS
-    SELECT BV.camion_id, (SUM(BV.facturacion_recorrido) - SUM(BV.costo_viaje) - SUM(BOT.costo_mantenimiento)) 'Ganancia'
+    SELECT BV.camion_id 'camion', (SUM(BV.facturacion_recorrido) - SUM(BV.costo_viaje) - SUM(BOT.costo_mantenimiento)) 'ganancia'
         FROM [N&M'S].bi_Viajes BV
             INNER JOIN [N&M'S].bi_Ordenes_Trabajo BOT on BOT.camion_id = BV.camion_id
         GROUP BY BV.camion_id
@@ -777,7 +623,6 @@ GO
 ---------------------------------------------------
 
 -- 1
-
 SELECT * FROM [N&M'S].vw_max_tiempo_fuera_de_servicio
 
 -- 2
@@ -787,16 +632,16 @@ SELECT * FROM [N&M'S].vw_costo_total_mantenimiento_x_camion
 SELECT * FROM [N&M'S].vw_desvio_promedio_tarea_x_taller
 
 -- 4
-SELECT * FROM [N&M'S].vw_tareas_x_modelo
+SELECT * FROM [N&M'S].vw_tareas_x_modelo ORDER BY 1,3 DESC
 
 -- 5
-SELECT * FROM [N&M'S].vw_bi_materiales_x_taller
+SELECT * FROM [N&M'S].vw_bi_materiales_x_taller ORDER BY 1,3 DESC
 
 -- 6
 SELECT * FROM [N&M'S].vw_facturacion_total_por_recorrido_por_cuatrimestre
 
 -- 7
---SELECT * FROM [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes
+SELECT * FROM [N&M'S].vw_costo_promedio_x_rango_etario_de_choferes
 
 -- 8
 SELECT * FROM [N&M'S].vw_ganancia_x_camion
@@ -804,7 +649,7 @@ SELECT * FROM [N&M'S].vw_ganancia_x_camion
 --------------------------------------------------- 
 -- FIN TRANSACCION
 ---------------------------------------------------
---SELECT * FROM [N&M'S].bi_Viajes
+
 BEGIN
     DECLARE @id_test BIT = 1
 
