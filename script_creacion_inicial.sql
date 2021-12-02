@@ -913,14 +913,32 @@ CREATE PROCEDURE [N&M'S].sp_migrar_material_x_tarea AS
 	
 	BEGIN TRY
 		BEGIN TRANSACTION
-			INSERT INTO [N&M'S].Material_x_Tarea(tarea_id,material_id,cantidad)
-			SELECT DISTINCT 
-				TAREA_CODIGO,
-				[N&M'S].fn_obtener_id_material(MATERIAL_COD),
-				NULL
-			FROM gd_esquema.Maestra M1
-			WHERE MATERIAL_COD IS NOT NULL AND TAREA_CODIGO IS NOT NULL
-			GROUP BY TAREA_CODIGO, MATERIAL_COD
+			CREATE TABLE TEMP_material_x_tarea(tarea_id INT, material_id INT, patente NVARCHAR(510), fecha_inicio_real DATETIME2(3), fecha_fin_real DATETIME2(3), legajo INT)
+			INSERT INTO TEMP_material_x_tarea
+				SELECT
+					TAREA_CODIGO,
+					[N&M'S].fn_obtener_id_material(MATERIAL_COD),
+					CAMION_PATENTE,
+					TAREA_FECHA_INICIO,
+					TAREA_FECHA_FIN,
+					MECANICO_NRO_LEGAJO
+				FROM gd_esquema.Maestra M1
+				WHERE MATERIAL_COD IS NOT NULL AND TAREA_CODIGO IS NOT NULL
+			CREATE TABLE TEMP_cantidad_material_x_tarea(tarea_id INT, material_id INT, cantidad INT)
+			INSERT INTO TEMP_cantidad_material_x_tarea
+				SELECT DISTINCT
+					tarea_id,
+					material_id,
+					COUNT(*)
+				FROM TEMP_material_x_tarea
+				GROUP BY tarea_id,material_id,patente,fecha_inicio_real,fecha_fin_real,legajo
+			INSERT INTO [N&M'S].Material_x_Tarea
+				SELECT
+					tarea_id,
+					material_id,
+					SUM(cantidad)
+				FROM TEMP_cantidad_material_x_tarea
+				GROUP BY tarea_id,material_id
 		COMMIT TRANSACTION
 	END TRY
 	BEGIN CATCH
@@ -953,7 +971,7 @@ EXEC [N&M'S].sp_migrar_material
 EXEC [N&M'S].sp_migrar_material_x_tarea
 
 BEGIN
-	DECLARE @id_test BIT = 1
+	DECLARE @id_test BIT = 0
 
 	IF @id_test = 1
 		BEGIN
